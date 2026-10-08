@@ -4,6 +4,7 @@ import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { compileAsync, type FileImporter } from 'sass-embedded'
 import { afterAll, describe, expect, it } from 'vitest'
+import { describeIf } from './describeIf'
 import { scanScssSources } from '../src/codegen/scssEntries'
 import type { SrlBuildTarget } from '../src/codegen/tokens'
 import { srlScssAliases, writeSrlScss } from '../src/codegen/writeScss'
@@ -37,7 +38,7 @@ function importerFor(srlDir: string): FileImporter<'async'> {
   }
 }
 
-describe.skipIf(!hasTP)('generated entries compile with Sass', () => {
+describeIf(hasTP)('generated entries compile with Sass', () => {
   const outDir = mkdtempSync(join(tmpdir(), 'srl-compile-'))
   afterAll(() => rmSync(outDir, { recursive: true, force: true }))
   const config = JSON.parse(readFileSync(join(TP, 'srl.config.json'), 'utf8'))

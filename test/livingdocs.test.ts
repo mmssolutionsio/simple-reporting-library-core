@@ -2,6 +2,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, writeFil
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
+import { describeIf } from './describeIf'
 import {
   applyPlan,
   buildEditorDesign,
@@ -124,7 +125,7 @@ describe('formatGroupLabel', () => {
 const testProject = resolve(__dirname, '../../../../simple-reporting-library-test-project')
 const packageDir = resolve(__dirname, '../../livingdocs')
 
-describe.skipIf(!existsSync(packageDir))('livingdocs package (monorepo only)', () => {
+describeIf(existsSync(packageDir))('livingdocs package (monorepo only)', () => {
   it('has a valid manifest whose defaults all exist', () => {
     const source = loadSource(packageDir, '@simple-reporting/livingdocs')
     expect(source.defaults.length).toBeGreaterThan(40)
@@ -139,7 +140,7 @@ describe.skipIf(!existsSync(packageDir))('livingdocs package (monorepo only)', (
   })
 })
 
-describe.skipIf(!existsSync(join(testProject, 'livingdocs.config.json')))('buildEditorDesign parity with SRL 1', () => {
+describeIf(existsSync(join(testProject, 'livingdocs.config.json')))('buildEditorDesign parity with SRL 1', () => {
   it('produces the same groups, components and properties as SRL 1 mapLdd', async () => {
     const srl1 = JSON.parse(readFileSync(join(testProject, 'livingdocs.config.json'), 'utf8'))
     const { name, version, assets, groups, components, componentProperties, ...manual } = srl1

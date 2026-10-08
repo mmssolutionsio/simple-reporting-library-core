@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
+import { describeIf } from './describeIf'
 import { buildRouteTable, type NsWowRouting, type NsWowSettings, type RouteTable } from '../src/shared'
 
 const fixtures = resolve(__dirname, '../../../fixtures/data')
@@ -19,7 +20,7 @@ function load(variant: string): RouteTable {
 const paths = (table: RouteTable, locale: string) => table.locale[locale]!.entries.map((e) => e.path)
 const pathOf = (table: RouteTable, locale: string, uuid: string) => table.locale[locale]!.byUuid[uuid]?.path
 
-describe.skipIf(!hasFixtures)('buildRouteTable with fixtures (run `npm run fixtures` first)', () => {
+describeIf(hasFixtures)('buildRouteTable with fixtures (run `npm run fixtures` first)', () => {
   describe('nav-nested', () => {
     const table = load('nav-nested')
 

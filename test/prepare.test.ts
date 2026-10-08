@@ -1,6 +1,7 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
+import { describeIf } from './describeIf'
 import {
   buildRouteTable,
   extractSearchText,
@@ -136,7 +137,7 @@ describe('extractSearchText', () => {
 })
 
 const fixtures = resolve(__dirname, '../../../fixtures/data')
-describe.skipIf(!existsSync(join(fixtures, 'base')))('prepareArticleHtml over all fixture articles', () => {
+describeIf(existsSync(join(fixtures, 'base')))('prepareArticleHtml over all fixture articles', () => {
   const json = (file: string) => JSON.parse(readFileSync(file, 'utf8'))
   const settings = json(join(fixtures, 'base/json/settings.json'))
   const fixtureTable = buildRouteTable({

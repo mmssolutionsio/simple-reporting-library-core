@@ -5,6 +5,7 @@ import { parseFragment, serialize } from 'parse5'
 import { renderToString } from 'vue/server-renderer'
 import { compile, createSSRApp, defineComponent, h, type Component } from 'vue'
 import { describe, expect, it, vi } from 'vitest'
+import { describeIf } from './describeIf'
 import { buildRouteTable, prepareArticleHtml, type NsWowRouting } from '../src/shared'
 import { SrlHtml } from '../src/shared/html/render'
 
@@ -90,7 +91,7 @@ describe('SrlHtml', () => {
 // Acceptance criterion M4: the AST renderer produces the same DOM as the SRL 1 runtime
 // template compiler (vue3-runtime-template) for every article of the test data.
 const fixtures = resolve(__dirname, '../../../fixtures/data/base/html')
-describe.skipIf(!existsSync(fixtures))('parity with the Vue template compiler (SRL 1)', () => {
+describeIf(existsSync(fixtures))('parity with the Vue template compiler (SRL 1)', () => {
   const srl1Template = (raw: string) =>
     raw
       .replace(/<!--[\s\S]*?-->/g, '')

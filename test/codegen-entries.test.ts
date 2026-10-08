@@ -2,6 +2,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { afterAll, describe, expect, it } from 'vitest'
+import { describeIf } from './describeIf'
 import {
   DEFAULT_DESIGN_BASE_URL,
   renderIndexScss,
@@ -28,7 +29,7 @@ function sortFontLines(s: string): string {
   return lines.join('\n')
 }
 
-describe.skipIf(!hasTP)('scss entries – golden against SRL 1 test project', () => {
+describeIf(hasTP)('scss entries – golden against SRL 1 test project', () => {
   const sources = scanScssSources(TP, TP_DIRS)
   const { files, warnings } = renderScssEntries(sources, {
     entriesDir: join(TP, '.srl', 'imports'),

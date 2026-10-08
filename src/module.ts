@@ -1,16 +1,19 @@
 import type {} from '@nuxt/nitro-server'
 import type { NitroConfig } from 'nitropack'
-import { existsSync } from 'node:fs'
+import { existsSync, readdirSync } from 'node:fs'
 import { join, resolve as resolvePath } from 'node:path'
 import {
   addComponent,
+  addComponentsDir,
   addImportsDir,
   addPlugin,
   addServerHandler,
   addTemplate,
+  addTypeTemplate,
   createResolver,
   defineNuxtModule,
   extendPages,
+  updateTemplates,
   useLogger,
 } from '@nuxt/kit'
 import { prerenderRoutes, readManifestFromDisk } from './data/fs'
@@ -60,10 +63,43 @@ export default defineNuxtModule<ModuleOptions>({
     addImportsDir(resolve('./runtime/composables'))
     addComponent({ name: 'SrlHtml', export: 'SrlHtml', filePath: resolve('./shared/html/render') })
     addPlugin(resolve('./runtime/plugins/srl-data'))
+    addPlugin(resolve('./runtime/plugins/i18n'))
     addPlugin(resolve('./runtime/plugins/srl'))
     extendPages((pages) => {
       pages.push({ name: 'srl-page', path: '/:path(.*)*', file: resolve('./runtime/pages/SrlPage.vue') })
     })
+    nuxt.options.build.transpile.push(resolve('./runtime'))
+
+    // Core components (SrlMenu, SrlPageDialog, SrlArticleDialogButton, accordions, special pages, …).
+    // Priority 0: a project component with the same name (app/components/Srl/Menu.vue → SrlMenu)
+    // wins, because the project's component dirs have priority >= 1. Global, so special pages
+    // and dynamic `<component :is="'SrlPage' + name">` resolve.
+    addComponentsDir({ path: resolve('./runtime/components'), global: true, priority: 0 })
+
+    // SRL 1 import paths used by the livingdocs Vue files and migrated project code
+    nuxt.options.alias['#composables'] = resolve('./runtime/compat/composables')
+    nuxt.options.alias['#utils'] = resolve('./runtime/compat/utils')
+    addTypeTemplate({
+      filename: 'types/srl-globals.d.ts',
+      getContents: () => renderGlobalTypes(resolve('./shared/types'), resolve('./runtime/utils/menu')),
+    })
+
+    // i18n: project messages app/locales/<locale>.json (merged with translations_hosting.json at runtime)
+    const localesDir = join(nuxt.options.srcDir, 'locales')
+    addTemplate({ filename: 'srl/locales.mjs', getContents: () => renderLocalesTemplate(localesDir) })
+    nuxt.hook('builder:watch', async (_event, path) => {
+      // path is relative to srcDir or rootDir depending on the Nuxt version
+      const candidates = [resolvePath(nuxt.options.srcDir, path), resolvePath(nuxt.options.rootDir, path)]
+      if (candidates.some((candidate) => candidate.startsWith(localesDir))) {
+        await updateTemplates({ filter: (template) => template.filename === 'srl/locales.mjs' })
+      }
+    })
+    nuxt.options.vite.define = {
+      __VUE_I18N_FULL_INSTALL__: true,
+      __VUE_I18N_LEGACY_API__: false,
+      __INTLIFY_PROD_DEVTOOLS__: false,
+      ...nuxt.options.vite.define,
+    }
 
     // Custom tags of the nswow HTML -> components. Core components and the livingdocs mapping
     // push into this list; call updateTemplates() after changes in dev.
@@ -71,6 +107,26 @@ export default defineNuxtModule<ModuleOptions>({
     addTemplate({
       filename: 'srl/html-components.mjs',
       getContents: () => renderHtmlComponentsTemplate(htmlComponents),
+    })
+    // Core tags render the Nuxt component of the same name, so project overrides apply here too.
+    const coreTags: Record<string, string> = {
+      'srl-article-dialog-button': 'SrlArticleDialogButton',
+      'srl-article-accordion': 'SrlArticleAccordion',
+      'srl-category-accordion': 'SrlCategoryAccordion',
+      'srl-category-accordion-toggle': 'SrlCategoryAccordionToggle',
+      'srl-category-accordion-content': 'SrlCategoryAccordionContent',
+    }
+    const coreEntries: SrlHtmlComponent[] = Object.entries(coreTags).map(([tag, name]) => ({
+      tag,
+      filePath: resolve(`./runtime/components/${name.replace(/(?!^)(?=[A-Z])/g, '/')}.vue`),
+      priority: 0,
+    }))
+    htmlComponents.push(...coreEntries)
+    nuxt.hook('components:extend', (components) => {
+      for (const entry of coreEntries) {
+        const winner = components.find((component) => component.pascalName === coreTags[entry.tag] && component.mode !== 'server')
+        if (winner) entry.filePath = winner.filePath
+      }
     })
 
     if (preview) {
@@ -116,3 +172,31 @@ export default defineNuxtModule<ModuleOptions>({
     })
   },
 })
+
+/** `export default { en: {...}, de: {...} }` from <srcDir>/locales/*.json. */
+function renderLocalesTemplate(dir: string): string {
+  const files = existsSync(dir) ? readdirSync(dir).filter((file) => file.endsWith('.json')).sort() : []
+  const imports = files.map((file, i) => `import m${i} from ${JSON.stringify(join(dir, file))}`)
+  const entries = files.map((file, i) => `  ${JSON.stringify(file.slice(0, -'.json'.length))}: m${i},`)
+  return [...imports, '', 'export default {', ...entries, '}', ''].join('\n')
+}
+
+/** SRL 1 declared the nswow types globally; livingdocs Vue files still use them without import. */
+function renderGlobalTypes(sharedTypes: string, menuTypes: string): string {
+  return `import type * as Srl from ${JSON.stringify(sharedTypes)}
+import type { SrlNavigationItem } from ${JSON.stringify(menuTypes)}
+
+declare global {
+  type NsWowSettings = Srl.NsWowSettings
+  type NsWowArticle = Srl.NsWowArticle
+  type NsWowMenu = Srl.NsWowMenu
+  type NsWowRouting = Srl.NsWowRouting
+  type NsWowTranslations = Srl.NsWowTranslations
+  type NsWowDownload = Srl.NsWowDownload
+  type NsWowDownloads = Srl.NsWowDownloads
+  type NsWowNavigationItem = SrlNavigationItem
+}
+
+export {}
+`
+}

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, nextTick, onMounted } from 'vue'
 import { createError, navigateTo, useHead, useRoute, useRuntimeConfig } from '#imports'
 import { resolveSrlPath, useSrlArticle, useSrlManifest } from '../composables/srl'
 import { SrlHtml } from '../../shared/html/render'
@@ -31,6 +31,15 @@ useHead({
         href: base + path.slice(1),
       }))
     : [],
+})
+
+// Scroll to the #anchor once the article is rendered (client navigation and initial load; accordions
+// that contain the target open themselves on mount first).
+onMounted(async () => {
+  const id = decodeURIComponent(route.hash.slice(1))
+  if (!id) return
+  await nextTick()
+  setTimeout(() => document.getElementById(id)?.scrollIntoView({ block: 'start' }), 0)
 })
 </script>
 

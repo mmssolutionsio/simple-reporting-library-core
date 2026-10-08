@@ -1,12 +1,23 @@
-import { defineNuxtPlugin, navigateTo, useRuntimeConfig } from '#imports'
+import { defineNuxtPlugin, navigateTo, useRouter, useRuntimeConfig } from '#imports'
 import htmlComponents from '#build/srl/html-components.mjs'
 import type { Component } from 'vue'
 import { SRL_HTML_RESOLVER } from '../../shared/html/render'
 import { isFilePath } from '../../shared/uri'
+import { useSrlDialogRegistry } from '../composables/dialog'
+import { useSrlAccordionAnchored } from '../composables/pageState'
 
 export default defineNuxtPlugin((nuxtApp) => {
   const components = htmlComponents as Record<string, Component>
   const warned = new Set<string>()
+
+  // page state (SRL 1 clearPageState): dialogs and the hash accordion belong to one page
+  const dialogs = useSrlDialogRegistry()
+  const accordionAnchored = useSrlAccordionAnchored()
+  useRouter().beforeEach((to, from) => {
+    if (to.path === from.path) return
+    dialogs.value = {}
+    accordionAnchored.value = false
+  })
 
   nuxtApp.vueApp.provide(SRL_HTML_RESOLVER, (tag: string) => {
     const component = components[tag]

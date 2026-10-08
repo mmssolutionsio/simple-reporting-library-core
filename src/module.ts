@@ -57,6 +57,7 @@ export default defineNuxtModule<ModuleOptions>({
     }
 
     if (preview) {
+      // target app: SPA that loads the data next to it at runtime
       nuxt.options.ssr = false
     }
 
@@ -135,7 +136,14 @@ export default defineNuxtModule<ModuleOptions>({
     )
 
     if (preview) {
-      // Data is fetched next to the app at runtime; nothing to serve or prerender.
+      // Data is fetched next to the app at runtime; nothing to prerender. In dev the data folder is
+      // served at the app root (where nswow puts it next to the preview build).
+      if (nuxt.options.dev) {
+        nuxt.hook('nitro:config', (config: NitroConfig) => {
+          config.publicAssets ??= []
+          if (existsSync(dataDir)) config.publicAssets.push({ dir: dataDir, baseURL: '/', maxAge: 0 })
+        })
+      }
       return
     }
 

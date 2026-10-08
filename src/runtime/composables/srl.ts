@@ -1,6 +1,7 @@
 import { useAsyncData, useNuxtApp, useRoute, useRuntimeConfig } from '#imports'
 import { computed, type ComputedRef } from 'vue'
 import type { PreparedArticle } from '../../shared/html/nodes'
+import { loadPreviewArticle } from '../utils/preview'
 import type { SrlManifest } from '../../shared/manifest'
 import type { DialogEntry, RouteEntry } from '../../shared/routes/buildRouteTable'
 import type { NsWowArticle } from '../../shared/types'
@@ -61,7 +62,10 @@ export function fetchSrlArticle(locale: string, uuid: string): Promise<SrlArticl
   const key = `${locale}/${uuid}`
   let request = cache.get(key)
   if (!request) {
-    request = $fetch<SrlArticleData>(`/_srl/article/${locale}/${encodeURIComponent(uuid)}.json`)
+    request =
+      useSrlConfig().mode === 'preview'
+        ? loadPreviewArticle(useSrlManifest(), useRuntimeConfig().app.baseURL, locale, uuid)
+        : $fetch<SrlArticleData>(`/_srl/article/${locale}/${encodeURIComponent(uuid)}.json`)
     request.catch(() => cache.delete(key))
     cache.set(key, request)
   }

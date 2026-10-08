@@ -1,7 +1,8 @@
-import { useNuxtApp } from '#imports'
+import { useNuxtApp, useRuntimeConfig } from '#imports'
 import { computed, getCurrentInstance, onMounted, ref, shallowReactive, toValue, type MaybeRefOrGetter } from 'vue'
 import { searchIndex, type SrlSearchEntry, type SrlSearchOptions, type SrlSearchResult } from '../utils/search'
-import { useSrlLocale, useSrlManifest } from './srl'
+import { loadPreviewSearchIndex } from '../utils/preview'
+import { useSrlConfig, useSrlLocale, useSrlManifest } from './srl'
 
 export type { SrlSearchEntry, SrlSearchOptions, SrlSearchResult } from '../utils/search'
 
@@ -36,7 +37,10 @@ export function useSrlSearch(options: { locale?: MaybeRefOrGetter<string>; immed
     pending.value = true
     error.value = undefined
     try {
-      store.requests[loc] ??= $fetch<SrlSearchEntry[]>(`/_srl/search/${loc}.json`)
+      store.requests[loc] ??=
+        useSrlConfig().mode === 'preview'
+          ? loadPreviewSearchIndex(manifest, useRuntimeConfig().app.baseURL, loc)
+          : $fetch<SrlSearchEntry[]>(`/_srl/search/${loc}.json`)
       const entries = await store.requests[loc]
       store.indexes = { ...store.indexes, [loc]: entries }
       return entries

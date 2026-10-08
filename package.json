@@ -6,17 +6,26 @@
   "license": "UNLICENSED",
   "exports": {
     ".": "./src/module.ts",
-    "./shared": "./src/shared/index.ts"
+    "./shared": "./src/shared/index.ts",
+    "./config": "./src/config/index.ts",
+    "./codegen": "./src/codegen/index.ts",
+    "./scss/*": "./scss/*"
   },
   "dependencies": {
+    "@kne/color-palette": "^0.1.0",
     "@nuxt/kit": "^4.6.0",
+    "c12": "^3.3.4",
+    "jiti": "^2.7.0",
+    "modern-css-reset": "^1.4.0",
     "parse5": "^8.0.1",
-    "vue": "^3.5.43"
+    "vue": "^3.5.43",
+    "vue-i18n": "^11.4.13"
   },
   "main": "./src/module.ts",
   "devDependencies": {
     "h3": "^1.15.11",
     "nitropack": "^2.13.4",
-    "nuxt": "^4.6.0"
+    "nuxt": "^4.6.0",
+    "sass-embedded": "^1.105.1"
   }
 }

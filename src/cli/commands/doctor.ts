@@ -1,0 +1,85 @@
+import { existsSync, readFileSync } from 'node:fs'
+import { join } from 'node:path'
+import { defineCommand } from 'citty'
+import { readManifestFromDisk } from '../../data/fs'
+import { prepareArticleHtml } from '../../shared/html/prepare'
+import { articleHtmlPath } from '../../shared/manifest'
+import { buildEditorDesign } from '../../livingdocs/design'
+import { validateDesign } from '../../livingdocs/validator'
+import { logger, projectRoot, readPackageJson } from '../context'
+import { warnDataVersions } from './data'
+
+/** Checks data (routes, links, html files) and the editor design. Exit code 1 on errors. */
+export default defineCommand({
+  meta: { name: 'doctor', description: 'Check data/ (routes, links, articles) and the livingdocs design' },
+  args: { strict: { type: 'boolean', description: 'Treat warnings as errors' } },
+  async run({ args }) {
+    const root = projectRoot()
+    let errors = 0
+    let warnings = 0
+
+    const dataDir = join(root, 'data')
+    const manifest = await readManifestFromDisk(dataDir)
+    if (!manifest) {
+      logger.warn('No data/ folder (json/settings.json missing). Import data with: npx srl data import <zip|folder>')
+      warnings++
+    } else {
+      if (!warnDataVersions(dataDir)) warnings++
+      for (const issue of manifest.table.issues) {
+        logger.warn(`[${issue.locale}] ${issue.message}`)
+        warnings++
+      }
+      const unresolved = new Map<string, Set<string>>()
+      for (const locale of manifest.table.locales) {
+        const localeTable = manifest.table.locale[locale]!
+        for (const article of [...localeTable.entries.filter((e) => e.kind !== 'special'), ...Object.values(localeTable.dialogs)]) {
+          const file = join(dataDir, articleHtmlPath(locale, article.name))
+          if (!existsSync(file)) {
+            logger.error(`[${locale}] Missing article file ${articleHtmlPath(locale, article.name)} (${article.uuid})`)
+            errors++
+            continue
+          }
+          const prepared = prepareArticleHtml(readFileSync(file, 'utf8'), { table: manifest.table, locale, base: '/' })
+          for (const link of prepared.unresolvedLinks) {
+            if (!unresolved.has(link)) unresolved.set(link, new Set())
+            unresolved.get(link)!.add(`${locale}/${article.uuid}`)
+          }
+          for (const warning of prepared.warnings) {
+            logger.warn(`[${locale}/${article.uuid}] ${warning}`)
+            warnings++
+          }
+        }
+      }
+      for (const [link, articles] of unresolved) {
+        logger.warn(`Link ${link} has no target (in ${[...articles].join(', ')})`)
+        warnings++
+      }
+    }
+
+    const livingdocsDir = join(root, 'livingdocs')
+    if (existsSync(livingdocsDir)) {
+      const configFile = join(root, 'livingdocs.config.json')
+      const baseConfig = existsSync(configFile) ? JSON.parse(readFileSync(configFile, 'utf8')) : {}
+      const pkg = readPackageJson(root)
+      const { design, warnings: designWarnings } = await buildEditorDesign({
+        livingdocsDir,
+        baseConfig,
+        name: pkg.name ?? 'design',
+        version: pkg.version ?? '0.0.0',
+      })
+      const validation = validateDesign(design)
+      for (const message of [...designWarnings, ...validation.warnings]) {
+        logger.warn(message)
+        warnings++
+      }
+      for (const message of validation.errors) {
+        logger.error(message)
+        errors++
+      }
+    }
+
+    const summary = `${errors} error(s), ${warnings} warning(s)`
+    if (errors || (args.strict && warnings)) throw new Error(`srl doctor: ${summary}`)
+    logger.success(`srl doctor: ${summary}`)
+  },
+})

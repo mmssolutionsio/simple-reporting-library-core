@@ -17,6 +17,7 @@ import {
   useLogger,
 } from '@nuxt/kit'
 import { prerenderRoutes, readManifestFromDisk } from './data/fs'
+import { setupDesignSystem } from './designSystem'
 import { renderHtmlComponentsTemplate, type SrlHtmlComponent } from './htmlComponents'
 
 export type SrlMode = 'static' | 'preview'
@@ -128,6 +129,10 @@ export default defineNuxtModule<ModuleOptions>({
         if (winner) entry.filePath = winner.filePath
       }
     })
+
+    await setupDesignSystem(nuxt, htmlComponents, () =>
+      updateTemplates({ filter: (template) => template.filename === 'srl/html-components.mjs' }),
+    )
 
     if (preview) {
       // Data is fetched next to the app at runtime; nothing to serve or prerender.

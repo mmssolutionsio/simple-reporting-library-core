@@ -25,11 +25,19 @@ export const add = defineCommand({
     kind: kindArg,
     keys: { type: 'string', description: 'Comma separated keys (component:<name>, property:<name>) or group names instead of the prompt' },
     'dry-run': { type: 'boolean', description: 'Only show what would be copied' },
+    defaults: { type: 'boolean', description: 'Install the default components of the livingdocs packages (new projects)' },
   },
   async run({ args }) {
     const root = projectRoot()
     const projectDir = join(root, 'livingdocs')
     const sources = await livingdocsSources(root)
+    if (args.defaults) {
+      const plan = planInstall({ ...sources, projectDir, mode: 'defaults' })
+      for (const skipped of plan.skipped) logger.warn(`${skipped.key}: ${skipped.reason}`)
+      const copied = await applyPlan(plan, projectDir, { dryRun: args['dry-run'] })
+      logger.success(`${copied.length} default components ${args['dry-run'] ? 'would be ' : ''}installed`)
+      return
+    }
     const offered = planInstall({ ...sources, projectDir, mode: 'select' }).offered
     if (!offered.length) return logger.info('All components of the livingdocs packages are already in the project.')
 

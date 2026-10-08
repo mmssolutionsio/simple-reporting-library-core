@@ -1,5 +1,14 @@
 const Awesomizr = {};
 
+// SRL: escape text before it is inserted as HTML (the original only replaced the first & and <)
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
 // Data types
 
 /**
@@ -382,9 +391,9 @@ export function createTableOfContents({
     }
     toc +=
       '<a href="#' +
-      id +
+      escapeHtml(id) +
       '">' +
-      textContent.replace('&', '&amp;').replace('<', '&lt;') +
+      escapeHtml(textContent) +
       '</a></div>';
     if (accessible) {
       toc += '</div>';
@@ -397,12 +406,12 @@ export function createTableOfContents({
 
   if (!disabledocumenttitle) {
     // Add the document title as a heading
-    tocContainer += '<h1>' + document.title + '</h1>';
+    tocContainer += '<h1>' + escapeHtml(document.title) + '</h1>';
   }
 
   // Only insert a heading for the toc if it has not been set to empty string
   if (toctitle.length > 0) {
-    tocContainer += '<h2 class="' + tocHeadingClass + '">' + toctitle + '</h2>';
+    tocContainer += '<h2 class="' + tocHeadingClass + '">' + escapeHtml(toctitle) + '</h2>';
   }
 
   if (accessible) {

@@ -124,7 +124,7 @@ describe('formatGroupLabel', () => {
 const testProject = resolve(__dirname, '../../../../simple-reporting-library-test-project')
 const packageDir = resolve(__dirname, '../../livingdocs')
 
-describe('livingdocs package', () => {
+describe.skipIf(!existsSync(packageDir))('livingdocs package (monorepo only)', () => {
   it('has a valid manifest whose defaults all exist', () => {
     const source = loadSource(packageDir, '@simple-reporting/livingdocs')
     expect(source.defaults.length).toBeGreaterThan(40)

@@ -3,13 +3,27 @@
   "version": "2.0.0-alpha.0",
   "description": "Simple Reporting Library 2: Nuxt module, srl CLI and build targets",
   "type": "module",
-  "license": "UNLICENSED",
+  "license": "ISC",
   "exports": {
-    ".": "./src/module.ts",
-    "./shared": "./src/shared/index.ts",
-    "./config": "./src/config/index.ts",
-    "./codegen": "./src/codegen/index.ts",
-    "./scss/*": "./scss/*"
+    ".": {
+      "types": "./dist/module.d.ts",
+      "import": "./dist/module.mjs"
+    },
+    "./shared": {
+      "types": "./dist/shared/index.d.ts",
+      "import": "./dist/shared/index.mjs"
+    },
+    "./config": {
+      "types": "./dist/config/index.d.ts",
+      "import": "./dist/config/index.mjs"
+    },
+    "./codegen": {
+      "types": "./dist/codegen/index.d.ts",
+      "import": "./dist/codegen/index.mjs"
+    },
+    "./scss/*": "./scss/*",
+    "./pdf/*": "./pdf/*",
+    "./package.json": "./package.json"
   },
   "dependencies": {
     "@clack/prompts": "^1.8.1",
@@ -31,20 +45,42 @@
     "vue": "^3.5.43",
     "vue-i18n": "^11.4.13"
   },
-  "main": "./src/module.ts",
+  "main": "./dist/module.mjs",
   "devDependencies": {
+    "@types/node": "^24.19.1",
     "@types/semver": "^7.8.0",
     "h3": "^1.15.11",
+    "happy-dom": "^20.14.5",
+    "mkdist": "^2.4.1",
     "nitropack": "^2.13.4",
     "nuxt": "^4.6.0",
-    "sass-embedded": "^1.105.1"
+    "sass-embedded": "^1.105.1",
+    "vitest": "^4.1.11",
+    "vue-sfc-transformer": "^0.1.17",
+    "vue-tsc": "^3.3.12"
   },
   "bin": {
     "srl": "./bin/srl.mjs"
   },
   "files": [
     "bin",
-    "src",
-    "scss"
-  ]
+    "dist",
+    "scss",
+    "pdf"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/multivisio/srl-core.git"
+  },
+  "publishConfig": {
+    "access": "public",
+    "tag": "alpha"
+  },
+  "author": "MULTIVISIO / mms solutions",
+  "types": "./dist/module.d.ts",
+  "scripts": {
+    "build": "node build.mjs",
+    "prepack": "node build.mjs",
+    "test": "vitest run"
+  }
 }

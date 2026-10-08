@@ -1,0 +1,31 @@
+name: Publish
+
+# Publishes to npm when a tag v<version> is pushed (e.g. v2.0.0-alpha.1).
+# Needs the secret NPM_TOKEN (npm granular access token with write access to @simple-reporting).
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+      - name: Tag matches package.json version
+        if: startsWith(github.ref, 'refs/tags/')
+        run: test "${GITHUB_REF_NAME}" = "v$(node -p 'require("./package.json").version')"
+      - run: npm install --no-audit --no-fund
+      - run: npm test
+      - run: npm run build
+      - name: 'Publish (dist-tag alpha/beta/rc from the version, otherwise latest)'
+        run: |
+          VERSION=$(node -p 'require("./package.json").version')
+          TAG=$(node -p "(/-(alpha|beta|rc)/.exec('$VERSION') || [, 'latest'])[1]")
+          npm publish --access public --tag "$TAG"
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

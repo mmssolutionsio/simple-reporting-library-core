@@ -1,0 +1,91 @@
+@use "variables";
+@use "../system";
+@use "sass:map";
+@use "sass:meta";
+
+@each $spacer, $spacerValue in variables.$spacer {
+  $varName: #{variables.$variable-prefix}spacer-#{$spacer};
+  @include system.add-root-style(
+                  $varName,
+                  system.size-unit(map.get($spacerValue, size))
+  );
+
+  @if not (map.has-key($spacerValue, media) and map.has-key(map.get($spacerValue, media), print)) {
+    @include system.add-root-style(
+                    $varName,
+                    system.size-unit(map.get($spacerValue, size)),
+                    print
+    );
+  }
+
+  @if map.has-key($spacerValue, media) {
+    @each $breakpoint, $breakpointValue in map.get($spacerValue, media) {
+      @if $breakpoint == print {
+        @if (meta.type-of($breakpointValue) == 'map' and map.has-key($breakpointValue, size)) {
+          @include system.add-root-style(
+                          $varName,
+                          system.size-unit(map.get($breakpointValue, size)),
+                          print
+          );
+        } @else {
+          @include system.add-root-style(
+                          $varName,
+                          system.size-unit($breakpointValue),
+                          print
+          );
+        }
+
+      } @else if $breakpoint == up {
+        @each $upBreakpoint, $upBreakpointValue in $breakpointValue {
+          @if meta.type-of($upBreakpointValue) == 'map' and map.has-key($upBreakpointValue, size) {
+            @include system.add-root-style(
+                            $varName,
+                            system.size-unit(map.get($upBreakpointValue, size)),
+                            $upBreakpoint,
+                            up
+            );
+          } @else {
+            @include system.add-root-style(
+                            $varName,
+                            system.size-unit($upBreakpointValue),
+                            $upBreakpoint,
+                            up
+            );
+          }
+        }
+      } @else if $breakpoint == down {
+        @each $downBreakpoint, $downBreakpointValue in $breakpointValue {
+          @if meta.type-of($downBreakpointValue) == 'map' and map.has-key($downBreakpointValue, size) {
+            @include system.add-root-style(
+                            $varName,
+                            system.size-unit(map.get($downBreakpointValue, size)),
+                            $downBreakpoint,
+                            down
+            );
+          } @else {
+            @include system.add-root-style(
+                            $varName,
+                            system.size-unit($downBreakpointValue),
+                            $downBreakpoint,
+                            down
+            );
+          }
+        }
+      } @else {
+        @if meta.type-of($breakpointValue) == 'map' and map.has-key($breakpointValue, size) {
+          @include system.add-root-style(
+                          $varName,
+                          system.size-unit(map.get($breakpointValue, size)),
+                          $breakpoint
+          );
+        } @else {
+          @include system.add-root-style(
+                          $varName,
+                          system.size-unit($breakpointValue),
+                          $breakpoint
+          );
+        }
+      }
+    }
+  }
+}

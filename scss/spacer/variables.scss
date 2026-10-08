@@ -1,0 +1,8 @@
+@use '../system';
+
+$class-prefix: system.$class-prefix !default;
+$variable-prefix: system.$variable-prefix !default;
+
+$margins: () !default;
+
+$spacer: () !default;

@@ -1,0 +1,27 @@
+@use 'sass:map';
+@use 'sass:string';
+@use 'variables';
+@use 'functions';
+@use '../system';
+
+@mixin core-styles {
+  @at-root {
+    @each $colorName, $colors in variables.$colors {
+      .#{variables.$class-prefix}color-#{'' + $colorName} {
+        color: functions.get($colorName);
+      }
+      $onKey: 'on-' + $colorName;
+      @if string.index($colorName, 'on-') != 1 {
+        .#{variables.$class-prefix}bg-#{'' + $colorName} {
+          background-color: functions.get($colorName);
+          @if map.has-key(variables.$colors, $onKey) {
+            color: functions.get($onKey);
+          }
+        }
+      }
+    }
+  }
+  .#{variables.$class-prefix}bg-transparent {
+    background-color: transparent;
+  }
+}

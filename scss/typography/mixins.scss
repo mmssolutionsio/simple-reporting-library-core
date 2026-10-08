@@ -1,0 +1,104 @@
+@use 'variables';
+@use 'functions';
+@use '../system';
+@use '../grid';
+@use '../colors';
+@use 'sass:map';
+@use 'sass:string';
+
+@mixin get($typo, $margins: false) {
+  @if not map.has-key(variables.$typography, $typo) {
+    @error "Invalid typo for typography specified! Choose one of #{map.keys(variables.$typography)}";
+  }
+  @include _build-typo($typo, map.get(variables.$typography, $typo), $margins);
+}
+
+@mixin _build-typo($typo, $map, $margins: false) {
+  @if map.has-key($map, font-family) {
+    font-family: functions.get-font-family($typo);
+  }
+
+  font-size: functions.get-font-size($typo);
+  line-height: functions.get-line-height($typo);
+
+  @if map.has-key($map, font-style) {
+    font-style: functions.get-font-style($typo);
+  }
+  font-weight: functions.get-font-weight($typo);
+
+  @if map.has-key($map, color) {
+    color: functions.get-font-color($typo);
+  }
+
+  @if map.has-key($map, letter-spacing) {
+    letter-spacing: functions.get-letter-spacing($typo);
+  }
+
+  @if map.has-key($map, text-transform) {
+    text-transform: functions.get-text-transform($typo);
+  }
+
+  @if $margins {
+    margin-top: functions.get-margin-top($typo);
+    margin-bottom: functions.get-margin-bottom($typo);
+  }
+}
+
+@mixin set-font-family($typo, $value) {
+  --#{variables.$variable-prefix}typo-#{$typo}-font-family: #{string.unquote(
+      $value
+    )};
+}
+
+@mixin set-font-size($typo, $value) {
+  --#{variables.$variable-prefix}typo-#{$typo}-font-size: #{system.size-unit(
+      $value
+    )};
+}
+
+@mixin set-line-height($typo, $value) {
+  --#{variables.$variable-prefix}typo-#{$typo}-line-height: #{system.size-unit(
+      $value,
+      em
+    )};
+}
+
+@mixin set-font-style($typo, $value) {
+  --#{variables.$variable-prefix}typo-#{$typo}-font-style: #{$value};
+}
+
+@mixin set-font-weight($typo, $value) {
+  --#{variables.$variable-prefix}typo-#{$typo}-font-weight: #{$value};
+}
+
+@mixin set-font-color($typo, $value) {
+  --#{variables.$variable-prefix}typo-#{$typo}-font-color: #{$value};
+}
+
+@mixin set-letter-spacing($typo, $value) {
+  --#{variables.$variable-prefix}typo-#{$typo}-letter-spacing: #{$value};
+}
+
+@mixin set-text-transform($typo, $value) {
+  --#{variables.$variable-prefix}typo-#{$typo}-text-transform: #{$value};
+}
+
+@mixin set-margin-top($typo, $value) {
+  --#{variables.$variable-prefix}typo-#{$typo}-margin-top: #{system.size-unit(
+      $value
+    )};
+}
+
+@mixin set-margin-bottom($typo, $value) {
+  --#{variables.$variable-prefix}typo-#{$typo}-margin-bottom: #{system.size-unit(
+      $value
+    )};
+}
+
+@mixin core-styles {
+  @each $typo, $values in variables.$typography {
+    .#{variables.$class-prefix}typo-#{'' + $typo} {
+      @include get($typo);
+    }
+  }
+}

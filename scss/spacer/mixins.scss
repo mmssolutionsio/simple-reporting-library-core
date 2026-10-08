@@ -1,0 +1,440 @@
+@use 'sass:map';
+@use 'sass:list';
+@use 'sass:meta';
+@use 'sass:string';
+@use 'variables';
+@use 'functions';
+@use '../grid';
+@use '../system';
+
+@mixin margin($spacer) {
+  margin: functions.get($spacer);
+}
+
+@mixin margin-block($spacer) {
+  @if system.$build == 'word' {
+    margin-top: functions.get($spacer);
+    margin-bottom: functions.get($spacer);
+  } @else {
+    margin-block: functions.get($spacer);
+  }
+}
+
+@mixin margin-inline($spacer) {
+  @if system.$build == 'word' {
+    margin-left: functions.get($spacer);
+    margin-right: functions.get($spacer);
+  } @else {
+    margin-inline: functions.get($spacer);
+  }
+}
+
+@mixin margin-top($spacer) {
+  @if system.$build == 'word' {
+    margin-top: functions.get($spacer);
+  } @else {
+    margin-block-start: functions.get($spacer);
+  }
+}
+
+@mixin margin-right($spacer) {
+  @if system.$build == 'word' {
+    margin-right: functions.get($spacer);
+  } @else {
+    margin-inline-end: functions.get($spacer);
+  }
+}
+
+@mixin margin-bottom($spacer) {
+  @if system.$build == 'word' {
+    margin-bottom: functions.get($spacer);
+  } @else {
+    margin-block-end: functions.get($spacer);
+  }
+}
+
+@mixin margin-left($spacer) {
+  @if system.$build == 'word' {
+    margin-left: functions.get($spacer);
+  } @else {
+    margin-inline-start: functions.get($spacer);
+  }
+}
+
+@mixin padding($spacer) {
+  padding: functions.get($spacer);
+}
+
+@mixin padding-block($spacer) {
+  @if system.$build == 'word' {
+    padding-top: functions.get($spacer);
+    padding-bottom: functions.get($spacer);
+  } @else {
+    padding-block: functions.get($spacer);
+  }
+}
+
+@mixin padding-inline($spacer) {
+  @if system.$build == 'word' {
+    padding-left: functions.get($spacer);
+    padding-right: functions.get($spacer);
+  } @else {
+    padding-inline: functions.get($spacer);
+  }
+}
+
+@mixin padding-top($spacer) {
+  @if system.$build == 'word' {
+    padding-top: functions.get($spacer);
+  } @else {
+    padding-block-start: functions.get($spacer);
+  }
+}
+
+@mixin padding-right($spacer) {
+  @if system.$build == 'word' {
+    padding-right: functions.get($spacer);
+  } @else {
+    padding-inline-end: functions.get($spacer);
+  }
+}
+
+@mixin padding-bottom($spacer) {
+  @if system.$build == 'word' {
+    padding-bottom: functions.get($spacer);
+  } @else {
+    padding-block-end: functions.get($spacer);
+  }
+}
+
+@mixin padding-left($spacer) {
+  @if system.$build == 'word' {
+    padding-left: functions.get($spacer);
+  } @else {
+    padding-inline-start: functions.get($spacer);
+  }
+}
+
+@mixin gap($spacer) {
+  gap: functions.get($spacer);
+}
+
+@mixin row-gap($spacer) {
+  row-gap: functions.get($spacer);
+}
+
+@mixin column-gap($spacer) {
+  column-gap: functions.get($spacer);
+}
+
+@function _component-margin-selector($name) {
+  @if $name == all {
+    @return '*';
+  }
+
+  @if meta.type-of($name) == 'string' {
+    $first: string.slice($name, 1, 1);
+
+    @if $first ==
+      '.' or
+      $first ==
+      '#' or
+      $first ==
+      '*' or
+      $first ==
+      '[' or
+      $first ==
+      ':'
+    {
+      @return $name;
+    }
+  }
+
+  @return '.#{variables.$class-prefix}#{$name}';
+}
+
+@function _component-margin-rules($group-name) {
+  @if not map.has-key(variables.$margins, group) {
+    @error "No margin groups configured! Define spacer.margins.group in srl.config.json.";
+  }
+
+  $groups: map.get(variables.$margins, group);
+
+  @if not map.has-key($groups, $group-name) {
+    @error "Invalid margin group \"#{$group-name}\" specified! Choose one of #{map.keys($groups)}";
+  }
+
+  $group: map.get($groups, $group-name);
+  $from: '.#{variables.$class-prefix}margin-group-#{$group-name}';
+  $rules: ();
+
+  @each $to, $margin in $group {
+    $rules: map.merge(
+            $rules,
+            (
+                            ($from, _component-margin-selector($to)): $margin,
+            )
+    );
+  }
+
+  @return $rules;
+}
+
+@function _component-margin-edge-selector($selector, $edge) {
+  @if meta.type-of($selector) !=
+    'string' or
+    string.slice($selector, 1, 1) !=
+    '.'
+  {
+    @return null;
+  }
+
+  @each $token in (' ', ':', '[', '#', '>', '+', '~', '*', ',') {
+    @if string.index($selector, $token) {
+      @return null;
+    }
+  }
+
+  @return '#{$selector}-#{$edge}';
+}
+
+@mixin component-margin($spacing-rules) {
+  @if meta.type-of($spacing-rules) != 'map' {
+    $spacing-rules: _component-margin-rules($spacing-rules);
+  }
+
+  @each $pair, $margin in $spacing-rules {
+    $from: list.nth($pair, 1);
+    $to: list.nth($pair, 2);
+
+    @if $to == '*' {
+      #{$from} + * {
+        @include margin-top($margin);
+      }
+    } @else {
+      #{$from} + #{$to} {
+        @include margin-top($margin);
+      }
+    }
+
+    @if system.$build == 'pdf' {
+      $from-first: _component-margin-edge-selector($from, 'first');
+      $from-last: _component-margin-edge-selector($from, 'last');
+      $to-first: _component-margin-edge-selector($to, 'first');
+
+      @if $to == '*' {
+        #{$from} + * {
+          @include margin-top($margin);
+        }
+
+        @if $from-last {
+          #{$from-last} + * {
+            @include margin-top($margin);
+          }
+        }
+      } @else {
+        #{$from} + #{$to} {
+          @include margin-top($margin);
+        }
+
+        @if $from-first {
+          #{$from-first} + #{$to} {
+            @include margin-top($margin);
+          }
+        }
+
+        @if $from-first and $to-first {
+          #{$from-first} + #{$to-first} {
+            @include margin-top($margin);
+          }
+        }
+
+        @if $to-first {
+          #{$from} + #{$to-first} {
+            @include margin-top($margin);
+          }
+        }
+
+        @if $from-last {
+          #{$from-last} + #{$to} {
+            @include margin-top($margin);
+          }
+        }
+
+        @if $from-last and $to-first {
+          #{$from-last} + #{$to-first} {
+            @include margin-top($margin);
+          }
+        }
+      }
+    } @else {
+      $wrappers: null;
+
+      @if system.$build != 'xbrl' {
+        $wrappers: ('.srl-nested-container:not(.srl-aside-content-container)');
+      } @else {
+        $wrappers: (
+                '.srl-nested-container:not(.srl-aside-content-container)',
+                '.ixbrl-element'
+        );
+      }
+      @each $wrapper in $wrappers {
+        @if $to == '*' {
+          #{$from} + #{$wrapper}:has(:first-child),
+          #{$wrapper}:has(#{$from}:last-child) + * {
+            @include margin-top($margin);
+          }
+        } @else {
+          #{$from} + #{$wrapper}:has(#{$to}:first-child),
+          #{$wrapper}:has(#{$from}:last-child) + #{$to},
+          #{$wrapper}:has(#{$from}:first-child)
+          + #{$wrapper}:has(#{$to}:last-child),
+          #{$wrapper}:has(#{$from}:last-child)
+          + #{$wrapper}:has(#{$to}:first-child) {
+            @include margin-top($margin);
+          }
+        }
+      }
+
+      $aside-wrapper: '.srl-aside-content-container';
+      $aside-content: '.srl-aside-content-container__content';
+
+      @if $to == '*' {
+        #{$from} + #{$aside-wrapper}:has(#{$aside-content} > :first-child),
+        #{$aside-wrapper}:has(#{$aside-content} > #{$from}:last-child) + * {
+          @include margin-top($margin);
+        }
+      } @else {
+        #{$from}
+        + #{$aside-wrapper}:has(#{$aside-content} > #{$to}:first-child),
+        #{$aside-wrapper}:has(#{$aside-content} > #{$from}:last-child) + #{$to},
+        #{$aside-wrapper}:has(#{$aside-content} > #{$from}:first-child)
+        + #{$aside-wrapper}:has(#{$aside-content} > #{$to}:last-child),
+        #{$aside-wrapper}:has(#{$aside-content} > #{$from}:last-child)
+        + #{$aside-wrapper}:has(#{$aside-content} > #{$to}:first-child) {
+          @include margin-top($margin);
+        }
+
+        @each $wrapper in $wrappers {
+          #{$aside-wrapper}:has(#{$aside-content} > #{$from}:first-child)
+          + #{$wrapper}:has(#{$to}:last-child),
+          #{$wrapper}:has(#{$from}:last-child)
+          + #{$aside-wrapper}:has(#{$aside-content} > #{$to}:first-child) {
+            @include margin-top($margin);
+          }
+        }
+      }
+    }
+  }
+}
+
+@mixin core-styles {
+  @at-root {
+    @each $spacer, $spacerValue in variables.$spacer {
+      .#{variables.$class-prefix}ma-none {
+        margin: 0;
+      }
+      .#{variables.$class-prefix}my-none {
+        margin-block: 0;
+      }
+      .#{variables.$class-prefix}mx-none {
+        margin-inline: 0;
+      }
+      .#{variables.$class-prefix}mt-none {
+        margin-block-start: 0;
+      }
+      .#{variables.$class-prefix}mr-none {
+        margin-inline-end: 0;
+      }
+      .#{variables.$class-prefix}mb-none {
+        margin-block-end: 0;
+      }
+      .#{variables.$class-prefix}ml-none {
+        margin-inline-start: 0;
+      }
+      .#{variables.$class-prefix}ma-#{'' + $spacer} {
+        @include margin($spacer);
+      }
+      .#{variables.$class-prefix}my-#{'' + $spacer} {
+        @include margin-block($spacer);
+      }
+      .#{variables.$class-prefix}mx-#{'' + $spacer} {
+        @include margin-inline($spacer);
+      }
+      .#{variables.$class-prefix}mt-#{'' + $spacer} {
+        @include margin-top($spacer);
+      }
+      .#{variables.$class-prefix}mr-#{'' + $spacer} {
+        @include margin-right($spacer);
+      }
+      .#{variables.$class-prefix}mb-#{'' + $spacer} {
+        @include margin-bottom($spacer);
+      }
+      .#{variables.$class-prefix}ml-#{'' + $spacer} {
+        @include margin-left($spacer);
+      }
+
+      .#{variables.$class-prefix}pa-none {
+        padding: 0;
+      }
+      .#{variables.$class-prefix}py-none {
+        padding-block: 0;
+      }
+      .#{variables.$class-prefix}px-none {
+        padding-inline: 0;
+      }
+      .#{variables.$class-prefix}pt-none {
+        padding-block-start: 0;
+      }
+      .#{variables.$class-prefix}pr-none {
+        padding-inline-end: 0;
+      }
+      .#{variables.$class-prefix}pb-none {
+        padding-block-end: 0;
+      }
+      .#{variables.$class-prefix}pl-none {
+        padding-inline-start: 0;
+      }
+      .#{variables.$class-prefix}pa-#{'' + $spacer} {
+        @include padding($spacer);
+      }
+      .#{variables.$class-prefix}py-#{'' + $spacer} {
+        @include padding-block($spacer);
+      }
+      .#{variables.$class-prefix}px-#{'' + $spacer} {
+        @include padding-inline($spacer);
+      }
+      .#{variables.$class-prefix}pt-#{'' + $spacer} {
+        @include padding-top($spacer);
+      }
+      .#{variables.$class-prefix}pr-#{'' + $spacer} {
+        @include padding-right($spacer);
+      }
+      .#{variables.$class-prefix}pb-#{'' + $spacer} {
+        @include padding-bottom($spacer);
+      }
+      .#{variables.$class-prefix}pl-#{'' + $spacer} {
+        @include padding-left($spacer);
+      }
+
+      .#{variables.$class-prefix}gap-none {
+        gap: 0;
+      }
+      .#{variables.$class-prefix}gap-#{'' + $spacer} {
+        @include gap($spacer);
+      }
+      .#{variables.$class-prefix}row-gap-none {
+        row-gap: 0;
+      }
+      .#{variables.$class-prefix}row-gap-#{'' + $spacer} {
+        @include row-gap($spacer);
+      }
+      .#{variables.$class-prefix}column-gap-none {
+        column-gap: 0;
+      }
+      .#{variables.$class-prefix}column-gap-#{'' + $spacer} {
+        @include column-gap($spacer);
+      }
+    }
+  }
+}

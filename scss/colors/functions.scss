@@ -1,0 +1,10 @@
+@use 'sass:map';
+@use 'variables';
+@use '../system';
+
+@function get($colorName) {
+  @if not map.has-key(variables.$colors, $colorName) {
+    @error "Invalid color \"#{$colorName}\" specified! Choose one of #{map.keys(variables.$colors)}";
+  }
+  @return system.root-style(#{variables.$variable-prefix}color-#{$colorName});
+}

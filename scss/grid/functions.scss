@@ -1,0 +1,61 @@
+@use 'sass:map';
+@use 'variables';
+@use '../system';
+
+
+@function get-container-max-width() {
+  @return system.root-style(#{variables.$variable-prefix}container-max-width, 0);
+}
+
+@function get-container-padding() {
+  @return system.root-style(#{variables.$variable-prefix}container-padding, 0);
+}
+
+@function get-breakpoint($breakpoint) {
+  @if not map.has-key(variables.$breakpoints, $breakpoint) {
+    @error "Invalid breakpoint for container specified! Choose one of #{map.keys(variables.$breakpoints)}";
+  }
+  @return system.root-style(#{variables.$variable-prefix}-breakpoint-#{$breakpoint});
+}
+
+@function get-gutter-columns() {
+  @return system.root-style(#{variables.$variable-prefix}gutter-columns);
+}
+
+@function get-gutter-row-gap() {
+  @return system.root-style(#{variables.$variable-prefix}gutter-row-gap);
+}
+
+@function get-gutter-column-gap() {
+  @return system.root-style(#{variables.$variable-prefix}gutter-column-gap);
+}
+
+@function calculate-pdf-col-span-minus-one-gutter($span) {
+  $gaps-inside: $span - 1;
+  $columns: map.get(variables.$columns, print);
+  $gutter: get-gutter-column-gap();
+
+  @return calc(
+          ((100% - (#{$columns - 1} * #{$gutter})) * #{$span} / #{$columns}) + (#{$gaps-inside} * #{$gutter})
+  );
+}
+
+@function calculate-pdf-col-span-plus-one-gutter($span) {
+  $gaps-inside: $span + 1;
+  $columns: map.get(variables.$columns, print);
+  $gutter: get-gutter-column-gap();
+
+  @return calc(
+          ((100% - (#{$columns - 1} * #{$gutter})) * #{$span} / #{$columns}) + (#{$gaps-inside} * #{$gutter})
+  );
+}
+
+@function calculate-pdf-col-start($start-col) {
+  $columns: map.get(variables.$columns, print);
+  $gutter: get-gutter-column-gap();
+  $span: $start-col - 1;
+
+  @return calc(
+    ((100% - (#{$columns - 1} * #{$gutter})) * #{$span} / #{$columns}) + (#{$span} * #{$gutter})
+  );
+}

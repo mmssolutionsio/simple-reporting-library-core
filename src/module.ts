@@ -12,6 +12,7 @@ import {
   useLogger,
 } from '@nuxt/kit'
 import { prerenderRoutes, readManifestFromDisk } from './data/fs'
+import { renderHtmlComponentsTemplate, type SrlHtmlComponent } from './htmlComponents'
 
 export type SrlMode = 'static' | 'preview'
 
@@ -62,10 +63,12 @@ export default defineNuxtModule<ModuleOptions>({
       pages.push({ name: 'srl-page', path: '/:path(.*)*', file: resolve('./runtime/pages/SrlPage.vue') })
     })
 
-    // Custom tags of the nswow HTML -> components (filled by the livingdocs mapping, M8)
+    // Custom tags of the nswow HTML -> components. Core components and the livingdocs mapping
+    // push into this list; call updateTemplates() after changes in dev.
+    const htmlComponents: SrlHtmlComponent[] = []
     addTemplate({
       filename: 'srl/html-components.mjs',
-      getContents: () => 'export default {}\n',
+      getContents: () => renderHtmlComponentsTemplate(htmlComponents),
     })
 
     if (preview) {

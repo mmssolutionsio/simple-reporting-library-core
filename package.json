@@ -77,7 +77,7 @@
     "access": "public",
     "tag": "alpha"
   },
-  "author": "MULTIVISIO / mms solutions",
+  "author": "mms solutions / MULTIVISIO",
   "types": "./dist/module.d.ts",
   "scripts": {
     "build": "node build.mjs",

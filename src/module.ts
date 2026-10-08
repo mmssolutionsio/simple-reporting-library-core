@@ -172,12 +172,11 @@ export default defineNuxtModule<ModuleOptions>({
       nitro.options.prerender.crawlLinks = false
       nitro.options.prerender.failOnError = true
       nitro.hooks.hook('prerender:routes', async (routes: Set<string>) => {
+        // only nuxt generate writes the pages; server builds render them live from data/
+        if (!nitro.options.static) return
         const manifest = await readManifestFromDisk(dataDir, { navigationMenu: options.navigationMenu })
         if (!manifest) {
-          if (nitro.options.static) {
-            throw new Error(`[srl] No data found in ${dataDir}. nuxt generate needs data/json/settings.json.`)
-          }
-          return
+          throw new Error(`[srl] No data found in ${dataDir}. nuxt generate needs data/json/settings.json.`)
         }
         for (const issue of manifest.table.issues) logger.warn(`[${issue.locale}] ${issue.message}`)
         for (const route of prerenderRoutes(manifest)) routes.add(route)

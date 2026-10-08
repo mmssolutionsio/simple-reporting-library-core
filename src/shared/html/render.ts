@@ -72,8 +72,8 @@ export const SrlHtml = defineComponent({
     resolve: { type: Function as PropType<SrlComponentResolver>, default: undefined },
   },
   setup(props) {
+    // missing components are reported by the resolver (once per tag)
     const injected = inject(SRL_HTML_RESOLVER, undefined)
-    const warn = (message: string) => console.warn(`[srl] ${message}`)
-    return () => renderNodes(props.nodes, { resolve: (tag) => (props.resolve ?? injected)?.(tag), warn })
+    return () => renderNodes(props.nodes, { resolve: (tag) => (props.resolve ?? injected)?.(tag) })
   },
 })

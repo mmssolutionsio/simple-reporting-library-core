@@ -6,5 +6,9 @@
   "license": "UNLICENSED",
   "exports": {
     "./shared": "./src/shared/index.ts"
+  },
+  "dependencies": {
+    "parse5": "^8.0.1",
+    "vue": "^3.5.43"
   }
 }

@@ -13,5 +13,10 @@
     "parse5": "^8.0.1",
     "vue": "^3.5.43"
   },
-  "main": "./src/module.ts"
+  "main": "./src/module.ts",
+  "devDependencies": {
+    "h3": "^1.15.11",
+    "nitropack": "^2.13.4",
+    "nuxt": "^4.6.0"
+  }
 }

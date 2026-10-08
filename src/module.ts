@@ -1,3 +1,5 @@
+import type {} from '@nuxt/nitro-server'
+import type { NitroConfig } from 'nitropack'
 import { existsSync } from 'node:fs'
 import { join, resolve as resolvePath } from 'node:path'
 import {
@@ -77,7 +79,7 @@ export default defineNuxtModule<ModuleOptions>({
     }
 
     // Data on the server: json/html as server assets, images/downloads as public assets
-    nuxt.hook('nitro:config', (config) => {
+    nuxt.hook('nitro:config', (config: NitroConfig) => {
       config.serverAssets ??= []
       config.serverAssets.push(
         { baseName: 'srl-json', dir: join(dataDir, 'json') },
@@ -100,10 +102,10 @@ export default defineNuxtModule<ModuleOptions>({
     nuxt.hook('nitro:init', (nitro) => {
       nitro.options.prerender.crawlLinks = false
       nitro.options.prerender.failOnError = true
-      nitro.hooks.hook('prerender:routes', async (routes) => {
+      nitro.hooks.hook('prerender:routes', async (routes: Set<string>) => {
         const manifest = await readManifestFromDisk(dataDir, { navigationMenu: options.navigationMenu })
         if (!manifest) {
-          if (nuxt.options.nitro.static || nuxt.options._generate) {
+          if (nitro.options.static) {
             throw new Error(`[srl] No data found in ${dataDir}. nuxt generate needs data/json/settings.json.`)
           }
           return

@@ -88,6 +88,15 @@ describe('prepareArticleHtml', () => {
     expect(nodes[0]).toMatchObject({ t: 'el', tag: 'img', children: [] })
   })
 
+  it('rewrites image urls in style attributes and <style> like SRL 1 <base href>', () => {
+    const { nodes, styles } = prepareArticleHtml(
+      '<style>.a{background:url("./images/b.png")}</style><div style="background-image: url(./images/a.png); --large-url: url(../images/a_width-1280.png)"></div>',
+      ctx,
+    )
+    expect(allHtml(nodes)).toContain('background-image: url(/report/images/a.png); --large-url: url(/report/images/a_width-1280.png)')
+    expect(styles).toEqual(['.a{background:url("/report/images/b.png")}'])
+  })
+
   it('collects inline styles and drops comments and ref attributes', () => {
     const result = prepareArticleHtml('<!-- x --><div ref="wrapper"><style>.a{color:red}</style><p>t</p></div>', ctx)
     expect(result.styles).toEqual(['.a{color:red}'])

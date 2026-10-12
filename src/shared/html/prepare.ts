@@ -23,6 +23,8 @@ export const DIALOG_BUTTON_TAG = 'srl-article-dialog-button'
 
 const ASSET_ATTRIBUTES = ['src', 'href', 'poster', 'data-src']
 const ASSET_PREFIX = /^\.\/(images|downloads)\//
+// url(./images/…) and url(../images/…) in style attributes and <style> (SRL 1 resolved them via <base href>)
+const CSS_ASSET_URL = /url\((['"]?)\.\.?\/(images|downloads)\//g
 const IDENTIFIER_PATH = /^[A-Za-z_$][\w$]*(\.[A-Za-z_$][\w$]*)*$/
 
 const isElement = (node: ChildNode | ParentNode): node is Element => 'tagName' in node
@@ -35,7 +37,7 @@ const isComponentTag = (tag: string) => tag.includes('-') && !tag.startsWith('te
  * - inline <style> → `styles`
  * - popup links and links to dialog articles → dialog button component
  * - internal links → final URLs of the route table (navigation hierarchy, base)
- * - ./images/ and ./downloads/ → base-absolute URLs
+ * - ./images/ and ./downloads/ → base-absolute URLs (also url() in style attributes and <style>)
  * - srl-* custom elements → component nodes with `:prop` bindings, `v-slot` scopes and
  *   `<template-x>` named slots
  * - line breaks in table cell spans → <br>
@@ -62,7 +64,7 @@ function transform(parent: ParentNode, ctx: PrepareContext, result: PreparedArti
 
     if (node.tagName === 'style') {
       const css = node.childNodes.filter(isText).map((t) => t.value).join('')
-      if (css.trim()) result.styles.push(css)
+      if (css.trim()) result.styles.push(rewriteCssAssets(css, ctx.base))
       removeNode(parent, node)
       continue
     }
@@ -81,9 +83,13 @@ function transform(parent: ParentNode, ctx: PrepareContext, result: PreparedArti
   }
 }
 
+const rewriteCssAssets = (css: string, base: string) => css.replace(CSS_ASSET_URL, (_, quote: string, folder: string) => `url(${quote}${base}${folder}/`)
+
 function rewriteAssets(node: Element, base: string) {
   for (const attr of node.attrs) {
-    if (ASSET_ATTRIBUTES.includes(attr.name) && ASSET_PREFIX.test(attr.value)) {
+    if (attr.name === 'style') {
+      attr.value = rewriteCssAssets(attr.value, base)
+    } else if (ASSET_ATTRIBUTES.includes(attr.name) && ASSET_PREFIX.test(attr.value)) {
       attr.value = base + attr.value.slice(2)
     } else if (attr.name === 'srcset') {
       attr.value = attr.value

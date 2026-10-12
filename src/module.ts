@@ -125,6 +125,11 @@ export default defineNuxtModule<ModuleOptions>({
     }))
     htmlComponents.push(...coreEntries)
     nuxt.hook('components:extend', (components) => {
+      // Special pages resolve by name (`SrlPage${component}`), so a project override
+      // (app/components/Srl/Page/Search.vue) must be global like the core component it replaces.
+      for (const component of components) {
+        if (component.pascalName.startsWith('SrlPage')) component.global = true
+      }
       for (const entry of coreEntries) {
         const winner = components.find((component) => component.pascalName === coreTags[entry.tag] && component.mode !== 'server')
         if (winner) entry.filePath = winner.filePath

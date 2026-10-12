@@ -44,7 +44,8 @@ onMounted(async () => {
 </script>
 
 <template>
-  <article v-if="entry" class="srl-article" :data-uuid="entry.uuid">
+  <!-- srl-article-root: SRL 1 class of the article container, used by project CSS and scripts -->
+  <article v-if="entry" class="srl-article" :class="{ 'srl-article-root': article }" :data-uuid="entry.uuid">
     <SrlHtml v-if="article" :nodes="article.nodes" />
     <component :is="`SrlPage${entry.component}`" v-else-if="entry.kind === 'special'" :entry="entry" />
   </article>

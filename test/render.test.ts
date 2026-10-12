@@ -7,7 +7,7 @@ import { compile, createSSRApp, defineComponent, h, type Component } from 'vue'
 import { describe, expect, it, vi } from 'vitest'
 import { describeIf } from './describeIf'
 import { buildRouteTable, prepareArticleHtml, type NsWowRouting } from '../src/shared'
-import { SrlHtml } from '../src/shared/html/render'
+import { createComponentResolver, SrlHtml } from '../src/shared/html/render'
 
 // Minimal stand-ins with the same slot/prop contracts as the SRL components.
 const passThrough = (name: string) =>
@@ -135,4 +135,16 @@ describeIf(existsSync(fixtures))('parity with the Vue template compiler (SRL 1)'
       expect(mismatches).toEqual([])
     }, 60_000)
   }
+})
+
+describe('createComponentResolver', () => {
+  it('resolves tags like Vue resolveComponent (digits after a hyphen)', () => {
+    const hero = passThrough('SrlLdStartpage26Hero')
+    const table = passThrough('SrlLdTable')
+    const resolveTag = createComponentResolver({ 'srl-ld-startpage26-hero': hero, 'srl-ld-table': table })
+    expect(resolveTag('srl-ld-table')).toBe(table)
+    expect(resolveTag('srl-ld-startpage26-hero')).toBe(hero)
+    expect(resolveTag('srl-ld-startpage-26-hero')).toBe(hero)
+    expect(resolveTag('srl-ld-unknown')).toBeUndefined()
+  })
 })

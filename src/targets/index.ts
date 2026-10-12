@@ -50,7 +50,9 @@ async function viteConfig(ctx: TargetContext, target: CssTarget, extra: InlineCo
         '@simple-reporting/core/pdf': join(corePackageDir, 'pdf'),
         '@simple-reporting/core/scss': join(corePackageDir, 'scss'),
         'modern-css-reset': require.resolve('modern-css-reset/dist/reset.min.css'),
-        '~': ctx.root,
+        // same as Nuxt (srcDir app/), so files shared with the site resolve identically
+        '~': join(ctx.root, 'app'),
+        '~~': ctx.root,
         '@': join(ctx.root, 'app'),
         assets: join(ctx.root, 'app/assets'),
       },

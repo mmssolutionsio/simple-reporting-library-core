@@ -6,6 +6,19 @@ export type SrlComponentResolver = (tag: string) => Component | undefined
 
 export const SRL_HTML_RESOLVER: InjectionKey<SrlComponentResolver> = Symbol('srl-html-resolver')
 
+/** Vue's `camelize`: `srl-ld-startpage-26-hero` and `srl-ld-startpage26-hero` → `srlLdStartpage26Hero`. */
+const normalizeTag = (tag: string) => tag.replace(/-(\w)/g, (_, c: string) => c.toUpperCase())
+
+/**
+ * Resolves a tag like SRL 1 (Vue `resolveComponent`): exact tag first, then the camelized
+ * name, so `<srl-ld-startpage-26-hero>` finds `SrlLdStartpage26Hero` (registered as
+ * `srl-ld-startpage26-hero`).
+ */
+export function createComponentResolver(components: Record<string, Component>): SrlComponentResolver {
+  const normalized = new Map(Object.entries(components).map(([tag, component]) => [normalizeTag(tag), component]))
+  return (tag) => components[tag] ?? normalized.get(normalizeTag(tag))
+}
+
 type Scope = Record<string, unknown>
 
 export interface RenderOptions {

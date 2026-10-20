@@ -71,7 +71,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/multivisio/srl-core.git"
+    "url": "git+https://github.com/mmssolutionsio/simple-reporting-library-core.git"
   },
   "publishConfig": {
     "access": "public",

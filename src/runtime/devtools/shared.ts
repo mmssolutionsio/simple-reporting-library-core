@@ -11,11 +11,11 @@ export const defaultSettings: SrlDevToolsSettings = {
   grid: false,
   gridOpacity: 0.08,
   badge: true,
-  badgePosition: 'bottom-right',
+  badgeSide: 'bottom',
+  badgeOffset: 92,
   theme: 'auto',
 }
 
-export const badgePositions: SrlDevToolsSettings['badgePosition'][] = ['top-right', 'top-left', 'bottom-right', 'bottom-left']
 
 function read(): SrlDevToolsSettings {
   try {
@@ -51,6 +51,11 @@ window.addEventListener('storage', (event) => {
 
 export function resetSettings() {
   settings.value = { ...defaultSettings }
+}
+
+export function resetBadgePosition() {
+  settings.value.badgeSide = defaultSettings.badgeSide
+  settings.value.badgeOffset = defaultSettings.badgeOffset
 }
 
 export function openChannel(onMessage: (message: SrlDevToolsMessage) => void) {

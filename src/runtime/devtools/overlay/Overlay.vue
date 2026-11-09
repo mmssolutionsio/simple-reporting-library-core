@@ -1,11 +1,12 @@
 <script setup lang="ts">
 // On the page (dev only): grid columns and a badge with breakpoint and width. Switched in the SRL
-// tab of the Nuxt DevTools; a click on the badge toggles the grid directly. The grid is built
+// tab of the Nuxt DevTools; a click on the badge toggles the grid, dragging moves it. The grid is built
 // from srl.config (columns, gutter, containers of the current breakpoint), plain CSS: core is
 // packaged without the project's `srl` SCSS module.
 import { computed } from 'vue'
 import { settings } from '../shared'
 import { useSrlConfig, useViewPort } from '../state'
+import Badge from './Badge.vue'
 
 const srlConfig = useSrlConfig()
 const viewPort = useViewPort()
@@ -42,17 +43,7 @@ const grid = computed(() => {
       </div>
     </div>
   </div>
-  <button
-    v-if="settings.badge"
-    type="button"
-    class="srl-devtools-badge"
-    :class="[`srl-devtools-badge--${settings.badgePosition}`, { 'is-on': settings.grid }]"
-    :title="settings.grid ? 'SRL: hide grid' : 'SRL: show grid'"
-    @click="settings.grid = !settings.grid"
-  >
-    <span class="srl-devtools-badge__dot" aria-hidden="true" />
-    {{ viewPort.viewPort ?? '–' }} · {{ viewPort.innerWidth }}px
-  </button>
+  <Badge v-if="settings.badge" />
 </template>
 
 <style>
@@ -86,6 +77,13 @@ const grid = computed(() => {
   color: #fff;
   font: 11px/1.4 system-ui, sans-serif;
   cursor: pointer;
+  touch-action: none;
+  user-select: none;
+  white-space: nowrap;
+}
+.srl-devtools-badge.is-dragging {
+  cursor: grabbing;
+  opacity: 0.85;
 }
 .srl-devtools-badge__dot {
   width: 7px;
@@ -96,8 +94,4 @@ const grid = computed(() => {
 .srl-devtools-badge.is-on .srl-devtools-badge__dot {
   background: #00dc82;
 }
-.srl-devtools-badge--top-right { top: 4px; right: 4px; }
-.srl-devtools-badge--top-left { top: 4px; left: 4px; }
-.srl-devtools-badge--bottom-right { bottom: 4px; right: 4px; }
-.srl-devtools-badge--bottom-left { bottom: 4px; left: 4px; }
 </style>

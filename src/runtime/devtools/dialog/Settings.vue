@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { badgePositions, resetSettings, settings } from '../shared'
+import { resetBadgePosition, resetSettings, settings } from '../shared'
 import Switch from '../ui/Switch.vue'
 </script>
 
@@ -11,11 +11,10 @@ import Switch from '../ui/Switch.vue'
         <td><Switch v-model="settings.badge" /></td>
       </tr>
       <tr>
-        <td>Badge position</td>
+        <td>Badge position <span class="srl-dt-muted">(drag the badge, it snaps to the nearest edge)</span></td>
         <td>
-          <select v-model="settings.badgePosition">
-            <option v-for="position in badgePositions" :key="position" :value="position">{{ position }}</option>
-          </select>
+          <span class="srl-dt-muted">{{ settings.badgeSide }} · {{ settings.badgeOffset }}%</span>
+          <button type="button" class="srl-dt-button" style="margin-left: 8px" @click="resetBadgePosition">Reset</button>
         </td>
       </tr>
       <tr>

@@ -6,7 +6,9 @@ export type SrlDevToolsSettings = {
   gridOpacity: number
   /** Small badge with breakpoint and width. */
   badge: boolean
-  badgePosition: 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left'
+  /** Edge the badge snaps to after dragging, and its position along that edge (0–100 %). */
+  badgeSide: 'top' | 'bottom' | 'left' | 'right'
+  badgeOffset: number
   /** Theme of the tab: `auto` follows the Nuxt DevTools. */
   theme: 'auto' | 'light' | 'dark'
 }

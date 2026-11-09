@@ -1,10 +1,12 @@
 import type {} from '@nuxt/nitro-server'
 import type { NitroConfig } from 'nitropack'
 import { copyFileSync, existsSync, readdirSync } from 'node:fs'
-import { join, resolve as resolvePath } from 'node:path'
+import { createRequire } from 'node:module'
+import { dirname, join, resolve as resolvePath } from 'node:path'
 import {
   addComponent,
   addComponentsDir,
+  addImports,
   addImportsDir,
   addPlugin,
   addServerHandler,
@@ -84,6 +86,19 @@ export default defineNuxtModule<ModuleOptions>({
     addComponent({ name: 'SrlHtml', export: 'SrlHtml', filePath: resolve('./shared/html/render') })
     addPlugin(resolve('./runtime/plugins/srl-data'))
     addPlugin(resolve('./runtime/plugins/i18n'))
+    // useI18n as auto-import (no `import … from 'vue-i18n'` in project code). vue-i18n is a core
+    // dependency and not always resolvable from the project (file: links, pnpm, version
+    // conflicts): Vite finds it through the module's node_modules, TypeScript/IDEs do not, so map
+    // it in the generated tsconfig (also brings the `$t` types for templates).
+    addImports([{ name: 'useI18n', from: 'vue-i18n' }])
+    const vueI18nDir = unresolvablePackageDir('vue-i18n', nuxt.options.rootDir)
+    if (vueI18nDir) {
+      nuxt.hook('prepare:types', ({ tsConfig }) => {
+        tsConfig.compilerOptions ??= {}
+        tsConfig.compilerOptions.paths ??= {}
+        tsConfig.compilerOptions.paths['vue-i18n'] ??= [vueI18nDir]
+      })
+    }
     addPlugin(resolve('./runtime/plugins/srl'))
     extendPages((pages) => {
       pages.push({ name: 'srl-page', path: '/:path(.*)*', file: resolve('./runtime/pages/SrlPage.vue') })
@@ -249,4 +264,21 @@ declare global {
 
 export {}
 `
+}
+
+/**
+ * Folder of a core dependency when the project cannot resolve it itself (not hoisted), else
+ * undefined (nothing to map).
+ */
+function unresolvablePackageDir(name: string, rootDir: string): string | undefined {
+  try {
+    createRequire(join(rootDir, 'package.json')).resolve(`${name}/package.json`)
+    return undefined
+  } catch {
+    try {
+      return dirname(createRequire(import.meta.url).resolve(`${name}/package.json`))
+    } catch {
+      return undefined
+    }
+  }
 }

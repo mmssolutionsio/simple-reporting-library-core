@@ -4,6 +4,23 @@ import type { NsWowMenu } from '../../shared/types'
 import { normalizePath } from './menu'
 
 /**
+ * Route entry rendered for a path: the page itself, or for an unknown path the 404 page of its
+ * locale (default locale for paths without one), as SrlPage renders it. Undefined for redirects
+ * (navigation levels, `/`, legacy `/<locale>/<slug>` links) and when there is no 404 page.
+ */
+export function entryForPath(table: RouteTable, path: string): RouteEntry | undefined {
+  const normalized = normalizePath(path)
+  const entry = table.byPath[normalized]
+  if (entry) return entry
+  if (normalized in table.redirects) return undefined
+  const [, locale = '', slug, ...rest] = normalized.split('/')
+  const localeTable = table.locale[locale]
+  const legacy = slug && !rest.length ? localeTable?.bySlug[slug] : undefined
+  if (legacy && localeTable?.byUuid[legacy]) return undefined
+  return (localeTable ?? table.locale[table.defaultLocale])?.notFound
+}
+
+/**
  * Reading order of a locale for prev/next.
  *
  * - With a navigation menu: depth-first order of its Article entries (same walk as the route
@@ -82,7 +99,7 @@ export interface LanguageSwitch {
  * alternates), otherwise the index page of that locale.
  */
 export function languageSwitch(table: RouteTable, currentPath: string, currentLocale: string): LanguageSwitch {
-  const entry = table.byPath[normalizePath(currentPath)]
+  const entry = entryForPath(table, currentPath)
   const alternates = entry ? (table.alternates[entry.uuid] ?? {}) : {}
   const all = table.locales.map((locale): LanguageSwitchItem => {
     const translated = locale in alternates
@@ -105,7 +122,7 @@ export interface BreadcrumbItem extends Breadcrumb {
 
 /** Navigation ancestors of the current page plus the page itself. */
 export function breadcrumbs(table: RouteTable, currentPath: string): BreadcrumbItem[] {
-  const entry = table.byPath[normalizePath(currentPath)]
+  const entry = entryForPath(table, currentPath)
   if (!entry) return []
   return [
     ...entry.breadcrumbs.map((crumb) => ({ ...crumb, current: false })),

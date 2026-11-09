@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { buildRouteTable, type NsWowArticle, type NsWowMenu, type NsWowRouting } from '../src/shared'
 import { activeTrail, buildMenuItems } from '../src/runtime/utils/menu'
-import { breadcrumbs, languageSwitch, prevNext, readingOrder } from '../src/runtime/utils/navigation'
+import { breadcrumbs, entryForPath, languageSwitch, prevNext, readingOrder } from '../src/runtime/utils/navigation'
 import { deepMerge } from '../src/runtime/utils/object'
 import { searchIndex, searchSnippet, type SrlSearchEntry } from '../src/runtime/utils/search'
 import { isInlineSvg, parseSvg } from '../src/runtime/utils/svg'
@@ -175,5 +175,33 @@ describe('helpers', () => {
   it('maps widths to breakpoints', () => {
     expect(viewportFor(1000, DEFAULT_BREAKPOINTS)).toBe('tablet-ls')
     expect(viewportFor(100, DEFAULT_BREAKPOINTS)).toBe('phone-pt')
+  })
+})
+
+describe('entryForPath – 404 page', () => {
+  const pages = (locale: string) =>
+    ({
+      pages: [page('home', 'home', { index: true }), page('about', `about-${locale}`), page('nf', '404')],
+      menu: {},
+    }) as unknown as NsWowRouting
+  const table = buildRouteTable({
+    settings: { languages: ['de', 'en'], defaultLanguage: 'de' } as never,
+    routing: { de: pages('de'), en: pages('en') },
+  })
+
+  it('returns the page itself or the 404 page of the locale', () => {
+    expect(entryForPath(table, '/en/about-en')?.uuid).toBe('about')
+    expect(entryForPath(table, '/en/missing/deep')).toMatchObject({ uuid: 'nf', path: '/en/404' })
+    expect(entryForPath(table, '/xx/missing')).toMatchObject({ uuid: 'nf', path: '/de/404' })
+  })
+
+  it('returns nothing for redirects', () => {
+    expect(entryForPath(table, '/')).toBeUndefined()
+  })
+
+  it('switches the language of the 404 page on unknown paths', () => {
+    expect(languageSwitch(table, '/en/missing', 'en').items).toEqual([
+      expect.objectContaining({ locale: 'de', href: '/de/404', translated: true }),
+    ])
   })
 })

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted } from 'vue'
-import { createError, navigateTo, useHead, useRoute, useRuntimeConfig } from '#imports'
+import { createError, navigateTo, setResponseStatus, useHead, useRequestEvent, useRoute, useRuntimeConfig } from '#imports'
 import { resolveSrlPath, useSrlArticle, useSrlManifest } from '../composables/srl'
 import { SrlHtml } from '../../shared/html/render'
 
@@ -12,15 +12,23 @@ const resolved = resolveSrlPath(manifest, route.path)
 if (resolved.type === 'redirect') {
   await navigateTo({ path: resolved.to, hash: route.hash }, { redirectCode: 301 })
 } else if (resolved.type === 'not-found') {
-  throw createError({ statusCode: 404, statusMessage: 'Page not found', fatal: true })
+  // Unknown path: render the 404 page of the locale (article with slug "404" or ErrorView)
+  // with status 404. Without one, fall back to the Nuxt error page.
+  if (!resolved.entry) throw createError({ statusCode: 404, statusMessage: 'Page not found', fatal: true })
+  if (import.meta.server) {
+    const event = useRequestEvent()
+    if (event) setResponseStatus(event, 404, 'Page not found')
+  }
 }
 
-const entry = resolved.type === 'page' ? resolved.entry : undefined
+const notFound = resolved.type === 'not-found'
+const entry = resolved.type === 'page' || resolved.type === 'not-found' ? resolved.entry : undefined
 const article = entry && entry.kind !== 'special' ? await useSrlArticle(entry) : undefined
 const publicationName = entry ? manifest.settings.publicationName?.[entry.locale] : undefined
 
 useHead({
   htmlAttrs: { lang: entry?.locale },
+  meta: notFound ? [{ name: 'robots', content: 'noindex' }] : [],
   title: entry ? [entry.title, publicationName].filter(Boolean).join(' - ') : undefined,
   // inline <style> blocks of the article, removed again on navigation
   style: computed(() => (article?.value?.styles ?? []).map((css, index) => ({ key: `srl-article-${index}`, innerHTML: css }))),

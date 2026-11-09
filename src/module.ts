@@ -1,6 +1,6 @@
 import type {} from '@nuxt/nitro-server'
 import type { NitroConfig } from 'nitropack'
-import { existsSync, readdirSync } from 'node:fs'
+import { copyFileSync, existsSync, readdirSync } from 'node:fs'
 import { join, resolve as resolvePath } from 'node:path'
 import {
   addComponent,
@@ -206,6 +206,18 @@ export default defineNuxtModule<ModuleOptions>({
         }
         for (const issue of manifest.table.issues) logger.warn(`[${issue.locale}] ${issue.message}`)
         for (const route of prerenderRoutes(manifest)) routes.add(route)
+        notFoundPath = manifest.table.locale[manifest.table.defaultLocale]?.notFound?.path
+      })
+      // 404.html (served by the hosting for unknown paths) is a client-only shell in Nuxt.
+      // Replace it with the prerendered 404 page of the default locale, so it shows the full
+      // page (header, language switch, nswow 404 article) without JavaScript.
+      let notFoundPath: string | undefined
+      nitro.hooks.hook('prerender:done', ({ prerenderedRoutes }) => {
+        const route = notFoundPath && prerenderedRoutes.find((r) => r.route === notFoundPath && r.fileName)
+        if (!route) return
+        const publicDir = nitro.options.output.publicDir
+        copyFileSync(join(publicDir, route.fileName!), join(publicDir, '404.html'))
+        logger.info(`404.html written from ${notFoundPath}`)
       })
     })
   },

@@ -2,6 +2,9 @@ import { DIALOG_PATTERN } from '../dialog'
 import { slugify as defaultSlugify } from '../slugify'
 import type { NsWowArticle, NsWowMenu, NsWowRouting, NsWowSettings } from '../types'
 
+/** Slug of the nswow article that is shown for unknown paths. */
+export const NOT_FOUND_SLUG = '404'
+
 export type RouteKind = 'index' | 'article' | 'special'
 
 export interface Breadcrumb {
@@ -59,6 +62,11 @@ export interface LocaleRouteTable {
   bySlug: Record<string, string>
   dialogs: Record<string, DialogEntry>
   index?: RouteEntry
+  /**
+   * Page shown for unknown paths of this locale: the article with the slug `404`, otherwise the
+   * special page `ErrorView`.
+   */
+  notFound?: RouteEntry
 }
 
 export interface RouteTable {
@@ -276,6 +284,11 @@ function buildLocale(locale: string, routing: NsWowRouting, table: RouteTable, c
     if (isDialog(page.uuid) || result.byUuid[page.uuid] || page.index) continue
     addRoute(page, `/${locale}/${page.slug}`, [])
   }
+
+  // 4. 404 page: an article with the slug "404" wins over the special page ErrorView
+  result.notFound =
+    result.entries.find((entry) => entry.slug === NOT_FOUND_SLUG && entry.kind !== 'special') ??
+    result.entries.find((entry) => entry.component === 'ErrorView')
 
   return result
 }

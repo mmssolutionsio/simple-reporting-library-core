@@ -20,6 +20,24 @@ import { prerenderRoutes, readManifestFromDisk } from './data/fs'
 import { setupDesignSystem } from './designSystem'
 import { renderHtmlComponentsTemplate, type SrlHtmlComponent } from './htmlComponents'
 
+/** Context of the Nitro runtime hook `srl:article:html`. Change `html` in place. */
+export interface SrlArticleHtmlContext {
+  /** Raw article HTML as delivered by nswow (`data/html/<locale>/<name>.html`). */
+  html: string
+  uuid: string
+  locale: string
+}
+
+declare module 'nitropack/types' {
+  interface NitroRuntimeHooks {
+    /**
+     * Called before an article is turned into the render tree (prerender and dev server, not in
+     * preview mode). Use it in a server plugin to rewrite the raw HTML, e.g. ids for anchors.
+     */
+    'srl:article:html': (ctx: SrlArticleHtmlContext) => void | Promise<void>
+  }
+}
+
 export type SrlMode = 'static' | 'preview'
 
 export interface ModuleOptions {

@@ -123,6 +123,15 @@ describe('scss entries – rules', () => {
     expect(warnings[0]).toMatch(/app\/assets\/scss\/ldd\.scss.*editor\.scss/)
   })
 
+  it('loads the shared editor core styles before project and component editor styles', () => {
+    const { files } = render()
+    const editor = files['editor.scss']
+    const core = editor.indexOf('@use "@simple-reporting/core/scss/editor-core-styles.scss" as *;')
+    expect(core).toBeGreaterThan(0)
+    expect(core).toBeLessThan(editor.indexOf('app/assets/scss/general.scss'))
+    expect(files['app.scss']).not.toContain('editor-core-styles')
+  })
+
   it('sorts livingdocs case-insensitively, groups before their components, Properties last', () => {
     const app = render().files['app.scss']
     const order = [

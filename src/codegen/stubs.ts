@@ -8,6 +8,7 @@
 export const SRL_SCSS_STUBS: Readonly<Record<string, string>> = {
   "button.scss": "@use \"config\";\n@forward '@simple-reporting/core/scss/button';",
   "core-styles.scss": "@use 'config';\n@forward '@simple-reporting/core/scss/core-styles';\n",
+  "editor.scss": "@use 'config';\n@forward '@simple-reporting/core/scss/editor';\n",
   "fonts.scss": "@use 'config';\n@forward '@simple-reporting/core/scss/fonts';\n",
   "grid.scss": "@use 'config';\n@forward '@simple-reporting/core/scss/grid';\n",
   "helpers.scss": "@use 'config';\n@forward '@simple-reporting/core/scss/helpers';\n",

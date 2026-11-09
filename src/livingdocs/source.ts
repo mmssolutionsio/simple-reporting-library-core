@@ -41,7 +41,7 @@ export function stripPrefix(name: string): string {
 
 /** Group label in the editor (same rules as SRL 1 lddGroupNames). */
 export function formatGroupLabel(group: string): string {
-  return stripPrefix(group).replace('_and_', ' / ').replace('_', ' ')
+  return stripPrefix(group).replace('_and_', ' / ').replaceAll('_', ' ')
 }
 
 export function entryKey(group: string, folder: string): string {

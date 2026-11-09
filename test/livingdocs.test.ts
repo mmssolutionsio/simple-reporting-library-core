@@ -118,6 +118,8 @@ describe('formatGroupLabel', () => {
     ['010.Titles', 'Titles'],
     ['130.Hosting_Components', 'Hosting Components'],
     ['050.Hero_and_Slider', 'Hero / Slider'],
+    ['160.Very_Long_Group_Name', 'Very Long Group Name'],
+    ['150.Key_Figures_and_more', 'Key Figures / more'],
     ['999.Properties', 'Properties'],
   ])('%s -> %s', (group, label) => expect(formatGroupLabel(group)).toBe(label))
 })

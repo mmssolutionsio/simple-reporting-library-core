@@ -1,5 +1,5 @@
 import { createError, defineEventHandler, getRouterParam } from 'h3'
-import { useRuntimeConfig } from 'nitropack/runtime'
+import { useNitroApp, useRuntimeConfig } from 'nitropack/runtime'
 import { prepareArticleHtml } from '../../../shared/html/prepare'
 import { articleHtmlPath } from '../../../shared/manifest'
 import { getManifest, readDataFile } from '../utils/srlData'
@@ -14,7 +14,9 @@ export default defineEventHandler(async (event) => {
   if (!article) {
     throw createError({ statusCode: 404, statusMessage: `Unknown article ${locale}/${uuid}` })
   }
-  const html = String(await readDataFile(articleHtmlPath(locale, article.name)))
-  const prepared = prepareArticleHtml(html, { table, locale, base: useRuntimeConfig().app.baseURL })
+  // Projects can rewrite the raw nswow HTML before it is prepared (server plugin, hook 'srl:article:html').
+  const ctx = { html: String(await readDataFile(articleHtmlPath(locale, article.name))), uuid, locale }
+  await useNitroApp().hooks.callHook('srl:article:html', ctx)
+  const prepared = prepareArticleHtml(ctx.html, { table, locale, base: useRuntimeConfig().app.baseURL })
   return { uuid, locale, title: article.title, ...prepared }
 })

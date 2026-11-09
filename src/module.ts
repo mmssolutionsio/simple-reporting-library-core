@@ -91,10 +91,13 @@ export default defineNuxtModule<ModuleOptions>({
     nuxt.options.build.transpile.push(resolve('./runtime'))
 
     // Core components (SrlMenu, SrlPageDialog, SrlArticleDialogButton, accordions, special pages, …).
-    // Priority 0: a project component with the same name (app/components/Srl/Menu.vue → SrlMenu)
-    // wins, because the project's component dirs have priority >= 1. Global, so special pages
-    // and dynamic `<component :is="'SrlPage' + name">` resolve.
-    addComponentsDir({ path: resolve('./runtime/components'), global: true, priority: 0 })
+    // Priority 0: a project component with the same name (app/components/Srl/Menu.vue → SrlMenu,
+    // app/components/Srl/Page/Search.vue → SrlPageSearch) wins, because the project's component
+    // dirs have priority >= 1. Not global: Nuxt turns global components into async chunks, which
+    // only produces INEFFECTIVE_DYNAMIC_IMPORT warnings for components that templates import
+    // anyway. Only the special pages (SrlPage*) are made global in `components:extend` below,
+    // because `<component :is="'SrlPage' + name">` resolves them by name.
+    addComponentsDir({ path: resolve('./runtime/components'), priority: 0 })
 
     // SRL 1 import paths used by the livingdocs Vue files and migrated project code
     nuxt.options.alias['#composables'] = resolve('./runtime/compat/composables')

@@ -6,6 +6,7 @@ import type { SrlManifest } from '../../shared/manifest'
 import type { DialogEntry, RouteEntry } from '../../shared/routes/buildRouteTable'
 import type { NsWowArticle } from '../../shared/types'
 import { normalizePath } from '../utils/menu'
+import { entryForPath } from '../utils/navigation'
 
 export interface SrlArticleData extends PreparedArticle {
   uuid: string
@@ -32,7 +33,8 @@ export function useSrlManifest(): SrlManifest {
 export type SrlResolvedPage =
   | { type: 'page'; entry: RouteEntry }
   | { type: 'redirect'; to: string }
-  | { type: 'not-found' }
+  /** `entry`: the 404 page of the path's locale (default locale for paths without one). */
+  | { type: 'not-found'; entry?: RouteEntry }
 
 /**
  * Maps a path (without base) to its route entry or redirect. Legacy SRL 1 URLs
@@ -49,7 +51,9 @@ export function resolveSrlPath(manifest: SrlManifest, path: string): SrlResolved
   const localeTable = manifest.table.locale[locale]
   const uuid = slug && !rest.length ? localeTable?.bySlug[slug] : undefined
   const legacy = uuid ? localeTable?.byUuid[uuid] : undefined
-  return legacy ? { type: 'redirect', to: legacy.path } : { type: 'not-found' }
+  if (legacy) return { type: 'redirect', to: legacy.path }
+  const notFound = entryForPath(manifest.table, normalized)
+  return notFound ? { type: 'not-found', entry: notFound } : { type: 'not-found' }
 }
 
 /**
@@ -88,11 +92,14 @@ export function useSrlLocale(manifest: SrlManifest = useSrlManifest()): Computed
   })
 }
 
-/** Route entry of the current page (undefined on unknown paths). */
+/**
+ * Route entry of the current page. On unknown paths the 404 page of the locale (what SrlPage
+ * renders), so server and client agree when a hosting serves 404.html for unknown URLs.
+ */
 export function useSrlCurrentEntry(): ComputedRef<RouteEntry | undefined> {
   const manifest = useSrlManifest()
   const route = useRoute()
-  return computed(() => manifest.table.byPath[normalizePath(route.path)])
+  return computed(() => entryForPath(manifest.table, route.path))
 }
 
 /** nswow articles (routing pages) of a locale, default: current locale. */

@@ -182,3 +182,32 @@ describe('buildRouteTable edge cases', () => {
     expect(table.locale.de!.byUuid.a!.path).toBe('/de/a')
   })
 })
+
+describe('buildRouteTable – 404 page', () => {
+  const settings = { languages: ['de', 'en'], defaultLanguage: 'de' } as NsWowSettings
+  const page = (uuid: string, slug: string, extra: Record<string, unknown> = {}) =>
+    ({ uuid, name: uuid, slug, translatedTitle: uuid, index: false, ...extra }) as unknown as NsWowRouting['pages'][number]
+  const routing = (pages: NsWowRouting['pages']) => ({ pages, menu: {} }) as unknown as NsWowRouting
+
+  it('falls back to ErrorView when the 404 article has no route', () => {
+    const table = buildRouteTable({
+      settings,
+      routing: {
+        de: routing([page('home', 'start', { index: true }), page('nf', '404', { component: 'ErrorView' }), page('a404', '404')]),
+        en: routing([page('nf', '404', { component: 'ErrorView' })]),
+      },
+    })
+    // ErrorView comes first in routing order and takes /de/404, the article gets no route
+    expect(table.locale.de!.notFound).toMatchObject({ uuid: 'nf', path: '/de/404' })
+    expect(table.locale.en!.notFound).toMatchObject({ uuid: 'nf', path: '/en/404', kind: 'special' })
+  })
+
+  it('prefers the routed 404 article over ErrorView', () => {
+    const table = buildRouteTable({
+      settings,
+      routing: { de: routing([page('a404', '404'), page('nf', '404', { component: 'ErrorView' })]), en: routing([]) },
+    })
+    expect(table.locale.de!.notFound).toMatchObject({ uuid: 'a404', path: '/de/404', kind: 'article' })
+    expect(table.locale.en!.notFound).toBeUndefined()
+  })
+})

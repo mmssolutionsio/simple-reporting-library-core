@@ -19,6 +19,12 @@ export default defineNuxtConfig({ modules: ['@simple-reporting/core'] })
 | `srl add\|remove components\|groups`, `srl create component\|group` | Livingdocs components |
 | `srl update [--check]`, `srl doctor` | Updates, checks |
 
+## Dev view
+
+`srl dev` serves `/<locale>/dev` to try out components (SRL 1 `DevView`). It renders
+`app/views/DevView.vue` (restart `srl dev` after creating it), otherwise a placeholder. The page is
+not part of any build.
+
 ## Rewriting article HTML
 
 The Nitro runtime hook `srl:article:html` runs before an article is turned into the render

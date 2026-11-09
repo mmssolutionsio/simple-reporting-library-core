@@ -60,6 +60,9 @@ export async function setupDesignSystem(nuxt: Nuxt, htmlComponents: SrlHtmlCompo
 
   // `assets/images/x.svg?component` in livingdocs files (SRL 1 used vite-svg-loader)
   addVitePlugin(svgLoader({ defaultImport: 'url' }))
+  // Types of the vite-svg-loader imports, inline: the package is a core dependency and usually not
+  // resolvable from the project (no `/// <reference types="vite-svg-loader" />` possible)
+  addTypeTemplate({ filename: 'srl/svg.d.ts', getContents: () => SVG_IMPORT_TYPES })
 
   addTemplate({ filename: 'srl/design-config.mjs', getContents: () => renderUseSrlDesignConfig(config) })
   addTypeTemplate({ filename: 'srl/design-config.d.ts', getContents: () => renderUseSrlDesignConfigTypes() })
@@ -124,3 +127,27 @@ export async function setupDesignSystem(nuxt: Nuxt, htmlComponents: SrlHtmlCompo
   })
   nuxt.hook('close', () => watcher.close())
 }
+
+/** `*.svg?component|url|raw|skipsvgo` (vite-svg-loader); plain `*.svg` is a URL string (vite/client). */
+const SVG_IMPORT_TYPES = `declare module '*.svg?component' {
+  import type { FunctionalComponent, SVGAttributes } from 'vue'
+  const src: FunctionalComponent<SVGAttributes>
+  export default src
+}
+
+declare module '*.svg?skipsvgo' {
+  import type { FunctionalComponent, SVGAttributes } from 'vue'
+  const src: FunctionalComponent<SVGAttributes>
+  export default src
+}
+
+declare module '*.svg?url' {
+  const src: string
+  export default src
+}
+
+declare module '*.svg?raw' {
+  const src: string
+  export default src
+}
+`

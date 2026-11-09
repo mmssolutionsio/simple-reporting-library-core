@@ -101,6 +101,13 @@ export default defineNuxtModule<ModuleOptions>({
     }
     addPlugin(resolve('./runtime/plugins/srl'))
     extendPages((pages) => {
+      // Dev only (SRL 1 DevView): /<locale>/dev to try out components, never in a build. The
+      // project's app/views/DevView.vue wins over the core placeholder.
+      if (nuxt.options.dev) {
+        const projectDevView = join(nuxt.options.srcDir, 'views/DevView.vue')
+        const file = existsSync(projectDevView) ? projectDevView : resolve('./runtime/pages/SrlDevView.vue')
+        pages.push({ name: 'srl-dev', path: '/:locale/dev', file })
+      }
       pages.push({ name: 'srl-page', path: '/:path(.*)*', file: resolve('./runtime/pages/SrlPage.vue') })
     })
     nuxt.options.build.transpile.push(resolve('./runtime'))

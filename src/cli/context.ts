@@ -58,8 +58,12 @@ export async function readAlternative(root: string): Promise<string | null | und
   }
   const mod = await loadFile(file)
   const config = mod.exports.default.$type === 'function-call' ? mod.exports.default.$args[0] : mod.exports.default
-  const value = config?.project?.livingdocs?.alternative
-  return value === undefined ? undefined : value
+  const livingdocs = config?.project?.livingdocs
+  if (!livingdocs) return undefined
+  const value = livingdocs.alternative
+  if (value !== undefined) return value
+  // magicast reads a `null` literal as undefined: the key being present means "explicitly none"
+  return Object.keys(livingdocs).includes('alternative') ? null : undefined
 }
 
 export async function writeAlternative(root: string, alternative: string | null): Promise<void> {

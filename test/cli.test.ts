@@ -85,6 +85,24 @@ describe('project.livingdocs.alternative', () => {
     expect(source).toContain('defineSrlConfig(')
     expect(source).toMatch(/alternative: ['"]@acme\/livingdocs['"]/)
     expect(await readAlternative(root)).toBe('@acme/livingdocs')
+    await writeAlternative(root, null)
+    expect(readFileSync(join(root, 'srl.config.ts'), 'utf8')).toMatch(/alternative: null/)
+    expect(await readAlternative(root)).toBeNull()
+  })
+
+  it('reads an explicit null in srl.config.ts (as written by migrateJsonConfig)', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'srl-cfg-'))
+    const write = (project: string) =>
+      writeFileSync(
+        join(root, 'srl.config.ts'),
+        `import { defineSrlConfig } from '@simple-reporting/core/config'\n\nexport default defineSrlConfig({\n  "colors": { "colors": [] },\n${project}})\n`,
+      )
+    write('  "project": {\n    "livingdocs": {\n      "alternative": null\n    }\n  }\n')
+    expect(await readAlternative(root)).toBeNull()
+    write('  "project": {\n    "livingdocs": {}\n  }\n')
+    expect(await readAlternative(root)).toBeUndefined()
+    write('')
+    expect(await readAlternative(root)).toBeUndefined()
   })
 })
 

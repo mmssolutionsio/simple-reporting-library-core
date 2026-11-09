@@ -25,6 +25,13 @@ export default defineNuxtConfig({ modules: ['@simple-reporting/core'] })
 `app/views/DevView.vue` (restart `srl dev` after creating it), otherwise a placeholder. The page is
 not part of any build.
 
+## SRL tab in the Nuxt DevTools
+
+In `srl dev` the Nuxt DevTools get an **SRL** tab (SRL 1 DevTools): viewport and breakpoints,
+grid, spacer, colors and typography of `srl.config` (typography with a sample per style). From
+the tab you switch a grid overlay and a viewport badge on the page. Dev only, never in a build;
+turn it off with `SRL_DISABLE_DEVTOOLS=true` (SRL 1 `VITE_DISABLE_SRL_DEVTOOLS` works too).
+
 ## Rewriting article HTML
 
 The Nitro runtime hook `srl:article:html` runs before an article is turned into the render

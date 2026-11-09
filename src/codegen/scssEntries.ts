@@ -178,6 +178,8 @@ export function renderScssEntries(
     output.pdf.push(`"./fonts.scss" as *`)
     output.word.push(`"./fonts.scss" as *`)
   }
+  // Shared editor styles (placeholders, labels, markers) before project and component overrides.
+  output.editor.push(`"${pkg}/editor-core-styles.scss" as *`)
 
   const byName = new Map(sources.mainFiles.map((f) => [path.basename(f), f]))
   const general = byName.get('general.scss')
@@ -262,6 +264,7 @@ export function renderIndexScss(sources: ScssSources, opts: { tokensDir: string 
     `@forward './colors' as colors-*;`,
     `@forward './typography' as typography-*;`,
     `@forward './helpers' as helpers-*;`,
+    `@forward './editor' as editor-*;`,
     `@forward './spacer' as spacer-*;`,
     `@forward "./button" as button-*;`,
     `@forward './meta';`,

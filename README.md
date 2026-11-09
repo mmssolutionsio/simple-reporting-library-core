@@ -19,4 +19,16 @@ export default defineNuxtConfig({ modules: ['@simple-reporting/core'] })
 | `srl add\|remove components\|groups`, `srl create component\|group` | Livingdocs components |
 | `srl update [--check]`, `srl doctor` | Updates, checks |
 
-Development happens in the SRL workspace repository; this repository is updated from it.
+## Rewriting article HTML
+
+The Nitro runtime hook `srl:article:html` runs before an article is turned into the render
+tree (prerender and dev server, not in preview mode). Change `ctx.html` in place:
+
+```ts
+// server/plugins/articleHtml.ts
+export default defineNitroPlugin((nitroApp) => {
+  nitroApp.hooks.hook('srl:article:html', (ctx) => {
+    ctx.html = ctx.html.replaceAll('&nbsp;', ' ')
+  })
+})
+```

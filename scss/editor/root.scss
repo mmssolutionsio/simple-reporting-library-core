@@ -1,0 +1,5 @@
+@use 'variables';
+@use '../system';
+
+// Reserved for editor-specific root styles, as in the other system modules.
+// Editor styles consume project CSS variables directly and provide fallbacks.

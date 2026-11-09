@@ -1,0 +1,332 @@
+@use 'variables';
+@use 'functions';
+@use '../fa';
+@use '../grid';
+@use 'sass:map';
+
+@mixin typography($token, $fallbacks) {
+  font-family: var(
+    --#{variables.$variable-prefix}typo-#{$token}-font-family,
+    #{map.get($fallbacks, font-family)}
+  );
+  font-size: var(
+    --#{variables.$variable-prefix}typo-#{$token}-font-size,
+    #{map.get($fallbacks, font-size)}
+  );
+  line-height: var(
+    --#{variables.$variable-prefix}typo-#{$token}-line-height,
+    #{map.get($fallbacks, line-height)}
+  );
+  font-style: var(
+    --#{variables.$variable-prefix}typo-#{$token}-font-style,
+    #{map.get($fallbacks, font-style)}
+  );
+  font-weight: var(
+    --#{variables.$variable-prefix}typo-#{$token}-font-weight,
+    #{map.get($fallbacks, font-weight)}
+  );
+  letter-spacing: var(
+    --#{variables.$variable-prefix}typo-#{$token}-letter-spacing,
+    #{map.get($fallbacks, letter-spacing)}
+  );
+
+  @if map.has-key($fallbacks, text-transform) {
+    text-transform: var(
+      --#{variables.$variable-prefix}typo-#{$token}-text-transform,
+      #{map.get($fallbacks, text-transform)}
+    );
+  }
+}
+
+@function _has-grid-breakpoints() {
+  @return map.has-key(grid.$breakpoints, phone-pt) and
+    map.has-key(grid.$breakpoints, phone-ls) and
+    map.has-key(grid.$breakpoints, tablet-pt) and
+    map.has-key(grid.$breakpoints, tablet-ls) and
+    map.has-key(grid.$breakpoints, desktop) and
+    map.has-key(grid.$breakpoints, desktop-large);
+}
+
+@mixin grid-base {
+  @if _has-grid-breakpoints() {
+    margin-left: auto;
+    margin-right: auto;
+    @include grid.container;
+    @include grid.row;
+  }
+}
+
+@mixin regular-width {
+  @if _has-grid-breakpoints() {
+    @include grid.col(4);
+    @include grid.col(4, phone-ls);
+    @include grid.col(8, tablet-pt);
+    @include grid.col(8, tablet-ls);
+    @include grid.offset(2, tablet-ls);
+    @include grid.col(6, desktop);
+    @include grid.offset(3, desktop);
+    @include grid.col(6, desktop-large);
+    @include grid.offset(3, desktop-large);
+  }
+}
+
+@mixin component-highlight {
+  /*
+    Overruling Livingdocs editor styles
+  */
+  .srl-article-root .doc-component-highlight {
+    outline: 1px solid functions.color('highlight');
+    border-radius: 0;
+  }
+}
+
+@mixin inline-marker($accent, $background, $icon: null) {
+  color: inherit;
+  background: $background;
+  border: 0;
+  padding: variables.$inline-marker-padding;
+  border-radius: variables.$inline-marker-radius;
+  box-shadow: none;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  display: inline;
+
+  @if $icon != null {
+    &::before {
+      @include fa.base;
+      @include fa.content($icon, solid);
+      display: inline-block;
+      width: 1em;
+      margin-inline: 0 0.3em;
+      color: $accent;
+      font-size: 0.72em;
+      vertical-align: 0.05em;
+      pointer-events: none;
+      user-select: none;
+    }
+  }
+}
+
+@mixin nowrap {
+  .srl-nowrap {
+    --b: 1px; // Border thickness.
+    --c: #{functions.color('highlight')};
+    --w: 6px; // Corner length.
+    border: var(--b) solid #0000;
+    --_g: #0000 90deg, var(--c) 0;
+    --_p: var(--w) var(--w) border-box no-repeat;
+    background:
+      conic-gradient(from 90deg at top var(--b) left var(--b), var(--_g)) 0 0 /
+        var(--_p),
+      conic-gradient(from 180deg at top var(--b) right var(--b), var(--_g)) 100%
+        0 / var(--_p),
+      conic-gradient(from 0deg at bottom var(--b) left var(--b), var(--_g)) 0
+        100% / var(--_p),
+      conic-gradient(from -90deg at bottom var(--b) right var(--b), var(--_g))
+        100% 100% / var(--_p);
+  }
+}
+
+@mixin key-figure {
+  .srl-key-figure {
+    @include inline-marker(
+      #6941c6,
+      #f4f3ff,
+      $icon: functions.icon('key-skeleton', 'key')
+    );
+  }
+}
+
+@mixin highlight {
+  .srl-highlight {
+    color: functions.color('emphasis');
+  }
+}
+
+@mixin temp-highlight {
+  .srl-temp-highlight {
+    @include inline-marker(#854a0e, variables.$temp-highlight-color);
+  }
+}
+
+@mixin fact {
+  .srl-fact {
+    @include inline-marker(#067647, #ecfdf3, $icon: database);
+  }
+}
+
+@mixin headings {
+  .srl-article-root {
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    [role='heading'][aria-level='7'],
+    [role='heading'][aria-level='8'],
+    [role='heading'][aria-level='9'] {
+      .srl-grid__inner {
+        position: relative;
+        padding-top: 26px;
+
+        &::before {
+          position: absolute;
+          top: 0;
+          left: 0;
+          display: block;
+          align-items: center;
+          width: max-content;
+          max-width: 100%;
+          min-height: 20px;
+          border: 1px solid #b2ddff;
+          border-radius: 999px;
+          background-color: #eff8ff;
+          color: #175cd3;
+          box-shadow: 0 1px 2px rgb(16 24 40 / 8%);
+          @include typography(
+            variables.$heading-label-typography,
+            variables.$heading-label-typography-fallbacks
+          );
+          padding: 3px 8px;
+          text-box-trim: trim-both;
+        }
+      }
+    }
+
+    h1 .srl-grid__inner::before {
+      content: 'Title h1';
+    }
+
+    h2 .srl-grid__inner::before {
+      content: 'Title h2';
+    }
+
+    h3 .srl-grid__inner::before {
+      content: 'Title h3';
+    }
+
+    h4 .srl-grid__inner::before {
+      content: 'Title h4';
+    }
+
+    h5 .srl-grid__inner::before {
+      content: 'Title h5';
+    }
+
+    h6 .srl-grid__inner::before {
+      content: 'Title h6';
+    }
+
+    [role='heading'][aria-level='7'] .srl-grid__inner::before {
+      content: 'Heading 7';
+    }
+
+    [role='heading'][aria-level='8'] .srl-grid__inner::before {
+      content: 'Heading 8';
+    }
+
+    [role='heading'][aria-level='9'] .srl-grid__inner::before {
+      content: 'Heading 9';
+    }
+  }
+}
+
+@mixin placeholders {
+  // Set width of placeholder image to 100%
+  img[src^='data:image/svg+xml'] {
+    width: 100%;
+  }
+
+  .srl-placeholder {
+    border-top: 1px solid #{functions.color('background')};
+    border-bottom: 1px solid #{functions.color('background')};
+    text-align: center;
+    margin-block: functions.spacer(
+      variables.$placeholder-spacing,
+      variables.$placeholder-spacing-fallback
+    );
+  }
+
+  .srl-placeholder__text {
+    @include typography(
+      variables.$label-typography,
+      variables.$label-typography-fallbacks
+    );
+  }
+
+  .srl-placeholder__text:not(.srl-grid__inner) {
+    @include regular-width;
+  }
+}
+
+@mixin components {
+  .srl-editor-component {
+    padding-block: functions.spacer(
+      variables.$component-spacing,
+      variables.$component-spacing-fallback
+    );
+
+    &.srl-pdf-pagebreak,
+    &.srl-pdf-columnbreak,
+    &.srl-anchor {
+      border-top: 1px solid #{functions.color('background')};
+      border-bottom: 1px solid #{functions.color('background')};
+    }
+
+    &.srl-pdf-publication-title,
+    &.srl-pdf-chapter-title {
+      border-bottom: 1px solid #{functions.color('background')};
+    }
+
+    .doc-editable.doc-no-placeholder:before {
+      display: none !important;
+    }
+  }
+
+  .srl-editor-component:not(.srl-grid) {
+    @include grid-base;
+  }
+
+  .srl-editor-component__text {
+    display: flex;
+    flex-direction: column;
+
+    &:after {
+      order: -1;
+      display: block;
+      @include typography(
+        variables.$label-typography,
+        variables.$label-typography-fallbacks
+      );
+
+      .srl-anchor & {
+        content: 'Anchor:';
+      }
+
+      .srl-pdf-publication-title & {
+        content: 'PDF publication title:';
+      }
+
+      .srl-pdf-chapter-title & {
+        content: 'PDF chapter title:';
+      }
+    }
+  }
+
+  .srl-editor-component__text:not(.srl-grid__inner) {
+    @include regular-width;
+  }
+}
+
+@mixin core-styles {
+  @include component-highlight;
+  @include temp-highlight;
+  @include nowrap;
+  @include key-figure;
+  @include highlight;
+  @include fact;
+  @include headings;
+  @include placeholders;
+  @include components;
+}

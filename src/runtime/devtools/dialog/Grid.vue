@@ -2,7 +2,6 @@
 import { computed } from 'vue'
 import { useSrlConfig } from '../state'
 
-import { NTable, NGrid, NGridItem, NH2 } from 'naive-ui'
 
 const srlConfig = useSrlConfig()
 
@@ -68,44 +67,41 @@ const gridView = computed<GridView[]>(() => {
 </script>
 
 <template>
-  <NGrid cols="1 s:2 m:3 l:4" responsive="screen" x-gap="20" y-gap="20">
-
-    <NGridItem v-for="item in gridView" :key="item.name">
-      <NH2 v-text="item.name"/>
-      <NTable striped>
+  <div class="srl-dt-cards">
+    <section v-for="item in gridView" :key="item.name">
+      <h2>{{ item.name }}</h2>
+      <table class="srl-dt-table">
         <tbody>
           <tr>
             <td>columns</td>
-            <td v-text="item.columns"/>
+            <td v-text="item.columns" />
           </tr>
           <tr v-if="item.name !== 'print'">
             <td>from</td>
-            <td v-text="item.section.from + 'px / ' + (item.section.from / 16) + 'rem'"/>
+            <td v-text="item.section.from + 'px / ' + item.section.from / 16 + 'rem'" />
           </tr>
           <tr v-if="item.name !== 'print' && item.section.to">
             <td>to</td>
-            <td v-text="item.section.to + 'px / ' + (item.section.to / 16) + 'rem'"/>
+            <td v-text="item.section.to + 'px / ' + item.section.to / 16 + 'rem'" />
           </tr>
           <tr v-if="item.padding">
             <td>padding</td>
-            <td v-text="typeof item.padding === 'number' ? item.padding + 'px / ' + (item.padding / 16) + 'rem' : item.padding"/>
+            <td v-text="typeof item.padding === 'number' ? item.padding + 'px / ' + item.padding / 16 + 'rem' : item.padding" />
           </tr>
           <tr v-if="item.maxWidth">
             <td>max-width</td>
-            <td v-text="typeof item.maxWidth === 'number' ? item.maxWidth + 'px / ' + (item.maxWidth/ 16) + 'rem' : item.maxWidth"/>
+            <td v-text="typeof item.maxWidth === 'number' ? item.maxWidth + 'px / ' + item.maxWidth / 16 + 'rem' : item.maxWidth" />
           </tr>
           <tr>
             <td>column-gap</td>
-            <td v-text="typeof item.gap.column === 'number' ? item.gap.column + 'px / ' + (item.gap.column / 16) + 'rem' : item.gap.column"></td>
+            <td v-text="typeof item.gap.column === 'number' ? item.gap.column + 'px / ' + item.gap.column / 16 + 'rem' : item.gap.column" />
           </tr>
           <tr>
             <td>row-gap</td>
-            <td v-text="typeof item.gap.row === 'number' ? item.gap.row + 'px / ' + (item.gap.row / 16) + 'rem' : item.gap.row"></td>
+            <td v-text="typeof item.gap.row === 'number' ? item.gap.row + 'px / ' + item.gap.row / 16 + 'rem' : item.gap.row" />
           </tr>
         </tbody>
-      </NTable>
-
-    </NGridItem>
-
-  </NGrid>
+      </table>
+    </section>
+  </div>
 </template>

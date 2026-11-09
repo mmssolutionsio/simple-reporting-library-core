@@ -1,32 +1,34 @@
 <script setup lang="ts">
-import { NButton, NSelect, NSwitch, NTable, NText } from 'naive-ui'
 import { badgePositions, resetSettings, settings } from '../shared'
+import Switch from '../ui/Switch.vue'
 </script>
 
 <template>
-  <NTable>
+  <table class="srl-dt-table">
     <tbody>
       <tr>
-        <td><NText strong>Viewport badge on the page</NText></td>
-        <td><NSwitch v-model:value="settings.badge" /></td>
+        <td>Viewport badge on the page (click toggles the grid)</td>
+        <td><Switch v-model="settings.badge" /></td>
       </tr>
       <tr>
-        <td><NText strong>Badge position</NText></td>
+        <td>Badge position</td>
         <td>
-          <NSelect
-            v-model:value="settings.badgePosition"
-            size="small"
-            :options="badgePositions.map((p) => ({ label: p, value: p }))"
-          />
+          <select v-model="settings.badgePosition">
+            <option v-for="position in badgePositions" :key="position" :value="position">{{ position }}</option>
+          </select>
         </td>
       </tr>
       <tr>
-        <td><NText strong>Dark mode (this tab)</NText></td>
-        <td><NSwitch v-model:value="settings.darkMode" /></td>
-      </tr>
-      <tr>
-        <td colspan="2"><NButton size="small" @click="resetSettings">Reset settings</NButton></td>
+        <td>Theme of this tab</td>
+        <td>
+          <select v-model="settings.theme">
+            <option value="auto">auto (Nuxt DevTools)</option>
+            <option value="light">light</option>
+            <option value="dark">dark</option>
+          </select>
+        </td>
       </tr>
     </tbody>
-  </NTable>
+  </table>
+  <p><button type="button" class="srl-dt-button" @click="resetSettings">Reset settings</button></p>
 </template>

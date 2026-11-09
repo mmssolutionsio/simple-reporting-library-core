@@ -1,36 +1,33 @@
 <script setup lang="ts">
-import { pageConnected, useViewPort, useSrlConfig } from '../state'
-import { NAlert, NTable, NH2, NText } from 'naive-ui'
+import { pageConnected, useSrlConfig, useViewPort } from '../state'
 
 const srlConfig = useSrlConfig()
 const viewPort = useViewPort()
 </script>
 
 <template>
-  <NAlert v-if="!pageConnected" type="info" :bordered="false" style="margin-bottom: 12px">
-    Width of the page appears once the page is open (srl dev, not in the DevTools popup window).
-  </NAlert>
-  <NTable striped>
+  <div v-if="!pageConnected" class="srl-dt-alert">
+    The width of the page appears once the page is open (in <code>srl dev</code>, not in the DevTools popup window).
+  </div>
+  <table class="srl-dt-table">
     <tbody>
       <tr>
         <td>window.innerWidth</td>
-        <td v-text="viewPort.innerWidth" />
+        <td>{{ viewPort.innerWidth }}px</td>
       </tr>
       <tr>
-        <td>ViewPort</td>
-        <td v-text="viewPort.viewPort" />
+        <td>Viewport</td>
+        <td>{{ viewPort.viewPort ?? '–' }}</td>
       </tr>
     </tbody>
-  </NTable>
-  <NH2>Breakpoints</NH2>
-  <NTable striped>
+  </table>
+  <h2 style="margin-top: 18px">Breakpoints</h2>
+  <table class="srl-dt-table">
     <tbody>
-      <tr v-for="(value, breakpoint) in srlConfig.grid.breakpoints" :key="breakpoint">
-        <td>
-          <NText strong v-text="breakpoint" :type="breakpoint === viewPort.viewPort?'error':'default'"></NText>
-        </td>
-        <td v-text="value" />
+      <tr v-for="(value, breakpoint) in srlConfig.grid?.breakpoints ?? {}" :key="breakpoint">
+        <td :class="{ 'is-current': breakpoint === viewPort.viewPort }">{{ breakpoint }}</td>
+        <td>{{ value }}px</td>
       </tr>
     </tbody>
-  </NTable>
+  </table>
 </template>

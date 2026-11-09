@@ -12,7 +12,7 @@ export const defaultSettings: SrlDevToolsSettings = {
   gridOpacity: 0.08,
   badge: true,
   badgePosition: 'bottom-right',
-  darkMode: false,
+  theme: 'auto',
 }
 
 export const badgePositions: SrlDevToolsSettings['badgePosition'][] = ['top-right', 'top-left', 'bottom-right', 'bottom-left']

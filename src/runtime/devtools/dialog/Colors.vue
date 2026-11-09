@@ -1,33 +1,33 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useSrlConfig } from '../state'
-import { NTable, NFlex } from 'naive-ui'
 
 const srlConfig = useSrlConfig()
-const colorView = computed(() => {
-  return srlConfig.value.colors.colors
-})
+const colors = computed<Array<{ name: string; color: string; description?: string }>>(() => srlConfig.value.colors?.colors ?? [])
 </script>
 
 <template>
-  <NTable striped>
+  <table class="srl-dt-table">
     <tbody>
-      <tr v-for="(item, i) in colorView" :key="i">
-        <td style="vertical-align: middle" v-text="item.name"/>
+      <tr v-for="item in colors" :key="item.name">
+        <td><code>{{ item.name }}</code></td>
         <td>
-          <NFlex align="center">
-            <div :style="{
-              width: '30px',
-              height: '30px',
-              backgroundColor: item.color,
-              border: '1px solid #00000020',
-              borderRadius: '4px',
-            }"/>
-            {{ item.color }}
-          </NFlex>
+          <span class="srl-dt-row">
+            <span class="swatch" :style="{ backgroundColor: item.color }" />
+            <code>{{ item.color }}</code>
+          </span>
         </td>
-        <td v-text="item.description ?? ''"/>
+        <td class="srl-dt-muted">{{ item.description ?? '' }}</td>
       </tr>
     </tbody>
-  </NTable>
+  </table>
 </template>
+
+<style scoped>
+.swatch {
+  width: 28px;
+  height: 28px;
+  border: 1px solid #00000020;
+  border-radius: 4px;
+}
+</style>

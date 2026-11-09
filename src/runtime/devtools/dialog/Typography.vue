@@ -2,7 +2,6 @@
 // New in SRL 2: the typography styles of srl.config with a sample. The sample uses the CSS custom
 // properties of the page (--srl-typo-<name>-*, responsive), falling back to the config values.
 import { computed, ref } from 'vue'
-import { NFlex, NH2, NInput, NTable, NTag, NText } from 'naive-ui'
 import { useSrlConfig } from '../state'
 
 type MediaValue = Record<string, string | number>
@@ -54,39 +53,33 @@ function mediaLines(style: TypoStyle): string[] {
 </script>
 
 <template>
-  <NFlex vertical>
-    <NText v-if="defaultFont">
-      default-font: <NText code>{{ defaultFont }}</NText>
-    </NText>
-    <NInput v-model:value="sampleText" size="small" placeholder="Sample text" />
-    <div v-for="style in styles" :key="style.name" class="typo">
-      <NFlex align="center" justify="space-between">
-        <NH2 class="typo__name">{{ style.name }}</NH2>
-        <NFlex size="small">
-          <NTag v-if="style['font-size'] !== undefined" size="small">{{ size(style['font-size']) }}</NTag>
-          <NTag v-if="style['line-height'] !== undefined" size="small">lh {{ style['line-height'] }}</NTag>
-          <NTag v-if="style['font-weight'] !== undefined" size="small">{{ style['font-weight'] }}</NTag>
-        </NFlex>
-      </NFlex>
-      <div class="typo__sample" :style="sampleStyle(style)">{{ sampleText }}</div>
-      <NTable v-if="mediaLines(style).length" size="small" striped>
-        <tbody>
-          <tr v-for="line in mediaLines(style)" :key="line">
-            <td>{{ line }}</td>
-          </tr>
-        </tbody>
-      </NTable>
+  <p v-if="defaultFont">default-font: <code>{{ defaultFont }}</code></p>
+  <input v-model="sampleText" type="text" placeholder="Sample text" />
+  <div v-for="style in styles" :key="style.name" class="typo">
+    <div class="srl-dt-row typo__head">
+      <h2 class="typo__name">{{ style.name }}</h2>
+      <span v-if="style['font-size'] !== undefined" class="srl-dt-tag">{{ size(style['font-size']) }}</span>
+      <span v-if="style['line-height'] !== undefined" class="srl-dt-tag">lh {{ style['line-height'] }}</span>
+      <span v-if="style['font-weight'] !== undefined" class="srl-dt-tag">{{ style['font-weight'] }}</span>
     </div>
-  </NFlex>
+    <div class="typo__sample" :style="sampleStyle(style)">{{ sampleText }}</div>
+    <div v-for="line in mediaLines(style)" :key="line" class="srl-dt-muted typo__media">{{ line }}</div>
+  </div>
 </template>
 
 <style scoped>
 .typo {
-  padding-block: 8px;
-  border-bottom: 1px solid #00000014;
+  padding-block: 10px;
+  border-bottom: 1px solid var(--dt-border);
+}
+.typo__head {
+  gap: 6px;
+}
+.typo__media {
+  font-size: 12px;
 }
 .typo__name {
-  margin: 0;
+  margin: 0 6px 0 0;
   font-size: 13px;
 }
 .typo__sample {

@@ -43,5 +43,9 @@ export default defineNitroPlugin((nitroApp) => {
 - **VS Code:** install [Some Sass](https://marketplace.visualstudio.com/items?itemName=SomewhatStationery.some-sass)
   and set `"somesass.workspace.loadPaths": ["."]` (new projects get this in `.vscode/`).
 
+TypeScript: Nuxt writes the aliases (`#composables`, `#imports`, `~`, `@`) to `.nuxt/tsconfig.app.json`;
+core adds `livingdocs/` to it, so aliases and auto-imports also work in the livingdocs components
+(VS Code needs the Vue extension).
+
 Only `srl/config.scss` differs per target (`$build`, `$size-unit`); each target build rewrites
 it and restores the app values afterwards.

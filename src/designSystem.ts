@@ -41,6 +41,16 @@ export async function setupDesignSystem(nuxt: Nuxt, htmlComponents: SrlHtmlCompo
   await loadConfig()
   const scss = await writeScss()
 
+  // livingdocs/ is outside srcDir (app/): add it to the generated app tsconfig, so IDEs (VS Code
+  // with Vue, PhpStorm) resolve aliases (#composables, ~, @), auto-imports and types there too
+  nuxt.hook('prepare:types', ({ tsConfig }) => {
+    const dir = relative(nuxt.options.buildDir, livingdocsDir).split('\\').join('/')
+    tsConfig.include ??= []
+    for (const pattern of [`${dir}/**/*`, `${dir}/**/*.vue`]) {
+      if (!tsConfig.include.includes(pattern)) tsConfig.include.push(pattern)
+    }
+  })
+
   // `@use 'srl'` in every component/project stylesheet, Font Awesome free/pro helpers
   Object.assign(nuxt.options.alias, srlScssAliases(scss.srlDir, detectFontAwesomeType(rootDir)))
   nuxt.options.alias['modern-css-reset'] ??= require.resolve('modern-css-reset/dist/reset.min.css')

@@ -7,8 +7,8 @@ export type SrlDevToolsSettings = {
   /** Small badge with breakpoint and width. */
   badge: boolean
   badgePosition: 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left'
-  /** Dark theme of the tab. */
-  darkMode: boolean
+  /** Theme of the tab: `auto` follows the Nuxt DevTools. */
+  theme: 'auto' | 'light' | 'dark'
 }
 
 export type SrlDevToolsMessage = { type: 'viewport'; width: number } | { type: 'request-viewport' }

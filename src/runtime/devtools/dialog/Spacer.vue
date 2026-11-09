@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { NGrid, NGridItem, NH2, NTable } from 'naive-ui'
 import { useSrlConfig } from '../state'
 import { computed } from 'vue'
 
@@ -18,6 +17,8 @@ type SpacerItemMedia = {
   name: string
   size: number | string
 }
+
+const px = (size: number | string) => (typeof size === 'number' ? `${size}px / ${size / 16}rem` : size)
 
 const spacerView = computed<SpacerItem[]>(() => {
   const res = []
@@ -57,53 +58,32 @@ const spacerView = computed<SpacerItem[]>(() => {
 </script>
 
 <template>
-  <NGrid cols="1 s:2 m:3 l:4" responsive="screen" x-gap="20" y-gap="20">
-    <NGridItem v-for="item in spacerView" :key="item.name">
-      <NH2>
-        {{item.name}}
-        <template v-if="item.alias">( {{item.alias}} )</template>
-      </NH2>
-      <NTable striped>
+  <div class="srl-dt-cards">
+    <section v-for="item in spacerView" :key="item.name">
+      <h2>
+        {{ item.name }}
+        <span v-if="item.alias" class="srl-dt-muted">({{ item.alias }})</span>
+      </h2>
+      <table class="srl-dt-table">
         <tbody>
           <tr>
-            <td v-text="'size'"/>
-            <td colspan="2" v-text="typeof item.size === 'number' ? item.size + 'px / ' + (item.size / 16) + 'rem' : item.size" />
+            <td>size</td>
+            <td colspan="2" v-text="px(item.size)" />
           </tr>
-          <template v-if="item.only">
-            <template v-for="(only, index) in item.only">
-              <tr>
-                <td class="v-top" v-if="index === 0" :rowspan="item.only.length" v-text="'only'"/>
-                <td v-text="only.name"/>
-                <td v-text="typeof only.size === 'number' ? only.size + 'px / ' + (only.size / 16) + 'rem' : only.size" />
-              </tr>
-            </template>
-          </template>
-          <template v-if="item.up">
-            <template v-for="(up, index) in item.up">
-              <tr>
-                <td class="v-top" v-if="index === 0" :rowspan="item.up.length" v-text="'up'"/>
-                <td v-text="up.name"/>
-                <td v-text="typeof up.size === 'number' ? up.size + 'px / ' + (up.size / 16) + 'rem' : up.size" />
-              </tr>
-            </template>
-          </template>
-          <template v-if="item.down">
-            <template v-for="(down, index) in item.down">
-              <tr>
-                <td class="v-top" v-if="index === 0" :rowspan="item.down.length" v-text="'down'"/>
-                <td v-text="down.name"/>
-                <td v-text="typeof down.size === 'number' ? down.size + 'px / ' + (down.size / 16) + 'rem' : down.size" />
-              </tr>
-            </template>
+          <template v-for="group in (['only', 'up', 'down'] as const)" :key="group">
+            <tr v-for="(entry, index) in item[group] ?? []" :key="group + entry.name">
+              <td v-if="index === 0" class="v-top" :rowspan="item[group]!.length">{{ group }}</td>
+              <td>{{ entry.name }}</td>
+              <td v-text="px(entry.size)" />
+            </tr>
           </template>
         </tbody>
-      </NTable>
-    </NGridItem>
-
-  </NGrid>
+      </table>
+    </section>
+  </div>
 </template>
 
-<style scoped lang="scss">
+<style scoped>
 .v-top {
   vertical-align: top;
 }

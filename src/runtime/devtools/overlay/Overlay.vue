@@ -1,7 +1,8 @@
 <script setup lang="ts">
 // On the page (dev only): grid columns and a badge with breakpoint and width. Switched in the SRL
-// tab of the Nuxt DevTools. The grid is built from srl.config (columns, gutter, containers of the
-// current breakpoint), plain CSS: core is packaged without the project's `srl` SCSS module.
+// tab of the Nuxt DevTools; a click on the badge toggles the grid directly. The grid is built
+// from srl.config (columns, gutter, containers of the current breakpoint), plain CSS: core is
+// packaged without the project's `srl` SCSS module.
 import { computed } from 'vue'
 import { settings } from '../shared'
 import { useSrlConfig, useViewPort } from '../state'
@@ -41,9 +42,17 @@ const grid = computed(() => {
       </div>
     </div>
   </div>
-  <div v-if="settings.badge" class="srl-devtools-badge" :class="`srl-devtools-badge--${settings.badgePosition}`" aria-hidden="true">
+  <button
+    v-if="settings.badge"
+    type="button"
+    class="srl-devtools-badge"
+    :class="[`srl-devtools-badge--${settings.badgePosition}`, { 'is-on': settings.grid }]"
+    :title="settings.grid ? 'SRL: hide grid' : 'SRL: show grid'"
+    @click="settings.grid = !settings.grid"
+  >
+    <span class="srl-devtools-badge__dot" aria-hidden="true" />
     {{ viewPort.viewPort ?? '–' }} · {{ viewPort.innerWidth }}px
-  </div>
+  </button>
 </template>
 
 <style>
@@ -66,12 +75,26 @@ const grid = computed(() => {
 .srl-devtools-badge {
   position: fixed;
   z-index: 2147483001;
-  padding: 2px 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin: 0;
+  padding: 2px 7px;
+  border: 0;
   border-radius: 4px;
   background: rgba(0, 0, 0, 0.7);
   color: #fff;
   font: 11px/1.4 system-ui, sans-serif;
-  pointer-events: none;
+  cursor: pointer;
+}
+.srl-devtools-badge__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #9ca3af;
+}
+.srl-devtools-badge.is-on .srl-devtools-badge__dot {
+  background: #00dc82;
 }
 .srl-devtools-badge--top-right { top: 4px; right: 4px; }
 .srl-devtools-badge--top-left { top: 4px; left: 4px; }

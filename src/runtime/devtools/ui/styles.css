@@ -1,0 +1,187 @@
+/* Look of the SRL tab, close to the Nuxt DevTools (no UI framework). */
+.srl-dt {
+  --dt-bg: #fff;
+  --dt-fg: #1f2328;
+  --dt-muted: #6b7280;
+  --dt-border: #e5e7eb;
+  --dt-stripe: #f8f9fa;
+  --dt-accent: #00dc82;
+  --dt-accent-fg: #047a4b;
+  --dt-info: #eef6ff;
+  color-scheme: light;
+  min-height: 100vh;
+  box-sizing: border-box;
+  padding: 10px 16px 32px;
+  background: var(--dt-bg);
+  color: var(--dt-fg);
+  font: 13px/1.45 ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+.srl-dt.is-dark {
+  --dt-bg: #151515;
+  --dt-fg: #e5e5e5;
+  --dt-muted: #9ca3af;
+  --dt-border: #2c2c2c;
+  --dt-stripe: #1c1c1c;
+  --dt-accent-fg: #00dc82;
+  --dt-info: #10243a;
+  color-scheme: dark;
+}
+.srl-dt *,
+.srl-dt *::before,
+.srl-dt *::after {
+  box-sizing: border-box;
+}
+.srl-dt h2 {
+  margin: 0 0 6px;
+  font-size: 14px;
+  font-weight: 600;
+}
+.srl-dt code {
+  font: 12px ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+.srl-dt-muted {
+  color: var(--dt-muted);
+}
+.srl-dt-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 8px;
+}
+.srl-dt-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+.srl-dt-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 16px;
+}
+.srl-dt-alert {
+  margin-bottom: 12px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: var(--dt-info);
+}
+.srl-dt-tag {
+  display: inline-block;
+  padding: 0 6px;
+  border: 1px solid var(--dt-border);
+  border-radius: 4px;
+  color: var(--dt-muted);
+  font-size: 11px;
+}
+
+/* tabs */
+.srl-dt-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid var(--dt-border);
+}
+.srl-dt-tabs__tab {
+  margin-bottom: -1px;
+  padding: 6px 12px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: none;
+  color: var(--dt-muted);
+  font: inherit;
+  cursor: pointer;
+}
+.srl-dt-tabs__tab:hover {
+  color: var(--dt-fg);
+}
+.srl-dt-tabs__tab.is-active {
+  border-bottom-color: var(--dt-accent);
+  color: var(--dt-accent-fg);
+}
+
+/* table */
+.srl-dt-table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid var(--dt-border);
+}
+.srl-dt-table td,
+.srl-dt-table th {
+  padding: 5px 10px;
+  border-bottom: 1px solid var(--dt-border);
+  text-align: left;
+  vertical-align: middle;
+}
+.srl-dt-table tr:nth-child(even) td {
+  background: var(--dt-stripe);
+}
+.srl-dt-table .is-current {
+  color: var(--dt-accent-fg);
+  font-weight: 600;
+}
+
+/* form controls */
+.srl-dt input[type='range'] {
+  accent-color: var(--dt-accent);
+}
+.srl-dt input[type='text'],
+.srl-dt select,
+.srl-dt button.srl-dt-button {
+  padding: 4px 8px;
+  border: 1px solid var(--dt-border);
+  border-radius: 6px;
+  background: var(--dt-bg);
+  color: var(--dt-fg);
+  font: inherit;
+}
+.srl-dt input[type='text'] {
+  width: 100%;
+}
+.srl-dt button.srl-dt-button {
+  cursor: pointer;
+}
+
+/* switch */
+.srl-dt-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+}
+.srl-dt-switch input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+.srl-dt-switch__track {
+  position: relative;
+  width: 30px;
+  height: 16px;
+  border-radius: 8px;
+  background: var(--dt-border);
+  transition: background 0.15s;
+}
+.srl-dt-switch__thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.15s;
+}
+.srl-dt-switch input:checked + .srl-dt-switch__track {
+  background: var(--dt-accent);
+}
+.srl-dt-switch input:checked + .srl-dt-switch__track .srl-dt-switch__thumb {
+  transform: translateX(14px);
+}
+.srl-dt-switch input:focus-visible + .srl-dt-switch__track {
+  outline: 2px solid var(--dt-accent);
+  outline-offset: 2px;
+}

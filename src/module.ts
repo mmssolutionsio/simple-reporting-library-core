@@ -334,5 +334,9 @@ import ${JSON.stringify(`${assets}@fs${file('./runtime/devtools/tab/main')}`)}
 <body><div id="app"></div></body>
 </html>`
   addDevServerHandler({ route, handler: defineEventHandler(() => html()) })
-  addCustomTab({ name: 'srl', title: 'SRL', icon: 'carbon:grid', view: { type: 'iframe', src: `${base}${route}` } }, nuxt)
+  // pinned: directly below Overview in the DevTools sidebar
+  addCustomTab(
+    { name: 'srl', title: 'SRL', icon: 'carbon:grid', category: 'pinned', view: { type: 'iframe', src: `${base}${route}` } },
+    nuxt,
+  )
 }

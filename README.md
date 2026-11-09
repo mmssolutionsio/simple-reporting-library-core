@@ -27,10 +27,12 @@ not part of any build.
 
 ## SRL tab in the Nuxt DevTools
 
-In `srl dev` the Nuxt DevTools get an **SRL** tab (SRL 1 DevTools): viewport and breakpoints,
-grid, spacer, colors and typography of `srl.config` (typography with a sample per style). From
-the tab you switch a grid overlay and a viewport badge on the page. Dev only, never in a build;
-turn it off with `SRL_DISABLE_DEVTOOLS=true` (SRL 1 `VITE_DISABLE_SRL_DEVTOOLS` works too).
+In `srl dev` the Nuxt DevTools get a pinned **SRL** tab (SRL 1 DevTools): viewport and
+breakpoints, grid, spacer, colors and typography of `srl.config` (typography with a sample per
+style). From the tab you switch a grid overlay and a viewport badge on the page; a click on the
+badge toggles the grid directly. Plain components, the theme follows the DevTools. Dev only,
+never in a build; turn it off with `SRL_DISABLE_DEVTOOLS=true` (SRL 1
+`VITE_DISABLE_SRL_DEVTOOLS` works too).
 
 ## Rewriting article HTML
 

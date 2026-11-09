@@ -47,5 +47,9 @@ TypeScript: Nuxt writes the aliases (`#composables`, `#imports`, `~`, `@`) to `.
 core adds `livingdocs/` to it, so aliases and auto-imports also work in the livingdocs components
 (VS Code needs the Vue extension).
 
+`useI18n` is auto-imported (no `import … from 'vue-i18n'` needed). When the project cannot
+resolve `vue-i18n` itself (it is a core dependency), core maps it in the generated tsconfig, so
+IDEs find its types, including `$t` in templates.
+
 Only `srl/config.scss` differs per target (`$build`, `$size-unit`); each target build rewrites
 it and restores the app values afterwards.

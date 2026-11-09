@@ -1,6 +1,6 @@
 @use '../system';
 @use '../typography';
-@use '../fa';
+@use 'srl/fa';
 @use 'variables';
 
 @mixin trim-margins {

@@ -1,6 +1,6 @@
 @use 'sass:map';
 @use 'variables';
-@use '../fa';
+@use 'srl/fa';
 
 @function color($role) {
   @if not map.has-key(variables.$colors, $role) {

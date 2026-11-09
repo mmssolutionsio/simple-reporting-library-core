@@ -32,3 +32,16 @@ export default defineNitroPlugin((nitroApp) => {
   })
 })
 ```
+
+## Code completion for `@use 'srl'`
+
+`srl dev` and `srl build` write the generated SCSS module to `srl/` in the project
+(gitignored, do not edit). It is a real folder, so IDEs resolve `@use 'srl'`,
+`@use 'srl/typography'` and `@use 'srl/fa'` without the Vite alias:
+
+- **PhpStorm/WebStorm:** works without setup (the project root is searched).
+- **VS Code:** install [Some Sass](https://marketplace.visualstudio.com/items?itemName=SomewhatStationery.some-sass)
+  and set `"somesass.workspace.loadPaths": ["."]` (new projects get this in `.vscode/`).
+
+Only `srl/config.scss` differs per target (`$build`, `$size-unit`); each target build rewrites
+it and restores the app values afterwards.

@@ -11,7 +11,7 @@ import {
   scanScssSources,
   type ScssSources,
 } from '../src/codegen/scssEntries'
-import { writeSrlScss } from '../src/codegen/writeScss'
+import { foreignSrlFiles, SRL_GENERATED_HEADER, writeSrlScss } from '../src/codegen/writeScss'
 
 const TP = join(__dirname, '../../../../simple-reporting-library-test-project')
 const hasTP = existsSync(join(TP, '.srl', 'imports', 'app.scss'))
@@ -168,16 +168,20 @@ describe('scss entries – rules', () => {
     )
   })
 
-  it('writeSrlScss writes per-target folders and only changed files', async () => {
+  it('writeSrlScss writes one srl/ folder in the project and rewrites config per target', async () => {
     touch('app/assets/fonts/x/x.scss')
     const config = { colors: { colors: [{ name: 'red', color: '#f00' }] } }
+    const srlDir = join(root, 'srl')
+    mkdirSync(join(outDir, 'pdf'), { recursive: true }) // per-target folder of older cores
     const first = await writeSrlScss({ rootDir: root, target: 'pdf', config, design: { baseUrl: 'https://d' } })
-    expect(first.srlDir).toBe(join(outDir, 'pdf'))
+    expect(first.srlDir).toBe(srlDir)
     expect(first.entry).toBe(join(outDir, 'entries', 'pdf.scss'))
+    expect(existsSync(join(outDir, 'pdf'))).toBe(false)
     for (const f of ['config', 'colors', 'typography', 'index', 'system', 'meta', 'fa/index']) {
-      expect(existsSync(join(outDir, 'pdf', `${f}.scss`))).toBe(true)
+      expect(readFileSync(join(srlDir, `${f}.scss`), 'utf8').startsWith(SRL_GENERATED_HEADER)).toBe(true)
     }
-    expect(readFileSync(join(outDir, 'pdf', 'config.scss'), 'utf8')).toContain('$build: pdf')
+    expect(readFileSync(join(srlDir, 'config.scss'), 'utf8')).toContain('$build: pdf')
+    expect(readFileSync(join(outDir, 'entries', 'pdf.scss'), 'utf8')).toContain('@use "../../../srl/config" as *;')
     expect(readFileSync(join(outDir, 'entries', 'fonts.scss'), 'utf8')).toBe(
       '@import "https://d/demo/1.2.3/fonts/style.css";',
     )
@@ -187,9 +191,12 @@ describe('scss entries – rules', () => {
     expect(second.written).toEqual([])
 
     const word = await writeSrlScss({ rootDir: root, target: 'word', config, design: { baseUrl: 'https://d' } })
-    expect(readFileSync(join(outDir, 'word', 'config.scss'), 'utf8')).toContain('$size-unit: pt')
-    // the shared fonts.scss did not change
-    expect(word.written).not.toContain(join(outDir, 'entries', 'fonts.scss'))
-    expect(readFileSync(join(outDir, 'pdf', 'config.scss'), 'utf8')).toContain('$build: pdf')
+    expect(readFileSync(join(srlDir, 'config.scss'), 'utf8')).toContain('$size-unit: pt')
+    // only the config and the entry of the new target change
+    expect(word.written.sort()).toEqual([join(outDir, 'entries', 'word.scss'), join(srlDir, 'config.scss')].sort())
+    expect(foreignSrlFiles(root)).toEqual([])
+
+    touch('srl/srl/ArticleLoader.ts')
+    expect(foreignSrlFiles(root)).toEqual(['srl/srl/ArticleLoader.ts'])
   })
 })

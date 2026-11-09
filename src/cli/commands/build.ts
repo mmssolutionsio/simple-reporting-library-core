@@ -4,6 +4,7 @@ import { join, relative } from 'node:path'
 import { defineCommand } from 'citty'
 import { zipSync } from 'fflate'
 import * as p from '@clack/prompts'
+import { writeSrlScss } from '../../codegen/writeScss'
 import { loadSrlConfig } from '../../config/load'
 import { buildCustomers, buildEditor, buildFonts, buildPdf, buildWord, buildXbrl, type TargetContext } from '../../targets'
 import { isInteractive, logger, projectRoot, readPackageJson } from '../context'
@@ -109,17 +110,23 @@ async function buildCssTargets(ctx: BuildContext, targets: BuildTarget[]) {
     warn: (m) => logger.warn(m),
   }
   const has = (t: BuildTarget) => targets.includes(t)
-  const fontsBuilt = has('editor') || has('pdf') ? await buildFonts(tctx) : false
-  if (has('pdf')) await buildPdf(tctx)
-  if (has('word')) await buildWord(tctx)
-  if (has('xbrl')) await buildXbrl(tctx)
-  let designErrors: string[] = []
-  if (has('editor')) designErrors = (await buildEditor(tctx, { fontsBuilt })).errors
-  if (designErrors.length) {
-    for (const error of designErrors) logger.error(error)
-    throw new Error(`The Livingdocs design is invalid (${designErrors.length} error(s)); design.zip was not created.`)
+  try {
+    const fontsBuilt = has('editor') || has('pdf') ? await buildFonts(tctx) : false
+    if (has('pdf')) await buildPdf(tctx)
+    if (has('word')) await buildWord(tctx)
+    if (has('xbrl')) await buildXbrl(tctx)
+    let designErrors: string[] = []
+    if (has('editor')) designErrors = (await buildEditor(tctx, { fontsBuilt })).errors
+    if (designErrors.length) {
+      for (const error of designErrors) logger.error(error)
+      throw new Error(`The Livingdocs design is invalid (${designErrors.length} error(s)); design.zip was not created.`)
+    }
+    if (ctx.customer) await buildCustomers(tctx, ctx.customer)
+  } finally {
+    // the targets rewrote srl/config.scss with their values; back to the app values for the
+    // dev server and the IDE
+    await writeSrlScss({ rootDir: ctx.root, target: 'app', config, environment: 'development', design: { name: tctx.name, version } })
   }
-  if (ctx.customer) await buildCustomers(tctx, ctx.customer)
   if (has('editor')) {
     await zipFolder(join(ctx.dist, 'editor'), join(ctx.dist, 'design.zip'))
     logger.success('design.zip')

@@ -6,6 +6,7 @@ import { dirname, join, resolve as resolvePath } from 'node:path'
 import {
   addComponent,
   addComponentsDir,
+  addDevServerHandler,
   addImports,
   addImportsDir,
   addPlugin,
@@ -18,6 +19,9 @@ import {
   updateTemplates,
   useLogger,
 } from '@nuxt/kit'
+import type { Nuxt } from '@nuxt/schema'
+import { addCustomTab } from '@nuxt/devtools-kit'
+import { defineEventHandler } from 'h3'
 import { prerenderRoutes, readManifestFromDisk } from './data/fs'
 import { setupDesignSystem } from './designSystem'
 import { renderHtmlComponentsTemplate, type SrlHtmlComponent } from './htmlComponents'
@@ -111,6 +115,11 @@ export default defineNuxtModule<ModuleOptions>({
       pages.push({ name: 'srl-page', path: '/:path(.*)*', file: resolve('./runtime/pages/SrlPage.vue') })
     })
     nuxt.options.build.transpile.push(resolve('./runtime'))
+
+    // Dev only: SRL tab in the Nuxt DevTools (viewport, grid, spacer, colors, typography of
+    // srl.config) and the grid overlay / viewport badge on the page it switches (SRL 1 DevTools).
+    const devToolsDisabled = ['1', 'true'].includes(process.env.SRL_DISABLE_DEVTOOLS ?? process.env.VITE_DISABLE_SRL_DEVTOOLS ?? '')
+    if (nuxt.options.dev && !devToolsDisabled) setupSrlDevTools(nuxt, resolve)
 
     // Core components (SrlMenu, SrlPageDialog, SrlArticleDialogButton, accordions, special pages, …).
     // Priority 0: a project component with the same name (app/components/Srl/Menu.vue → SrlMenu,
@@ -288,4 +297,42 @@ function unresolvablePackageDir(name: string, rootDir: string): string | undefin
       return undefined
     }
   }
+}
+
+/** Registers the SRL tab of the Nuxt DevTools, its page and the overlay plugin (dev only). */
+function setupSrlDevTools(nuxt: Nuxt, resolve: (path: string) => string) {
+  const file = (path: string) => {
+    const base = resolve(path)
+    return ['.ts', '.mjs', '.js'].map((ext) => base + ext).find((candidate) => existsSync(candidate)) ?? `${base}.mjs`
+  }
+  addPlugin({ src: file('./runtime/plugins/devtools.client'), mode: 'client' })
+  // the tab page loads its entry through /@fs/; allow the devtools folder also when core lives
+  // outside the project (file: links, workspaces)
+  const devtoolsDir = resolve('./runtime/devtools')
+  nuxt.hook('vite:extendConfig', (config) => {
+    const allow = config.server?.fs?.allow
+    if (Array.isArray(allow) && !allow.includes(devtoolsDir)) allow.push(devtoolsDir)
+  })
+
+  const base = nuxt.options.app.baseURL.replace(/\/$/, '')
+  const assets = `${base}${nuxt.options.app.buildAssetsDir}`.replace(/\/+/g, '/')
+  const route = '/__srl-devtools'
+  // the tab runs through the Vite dev server of the app: project styles (fonts, --srl-typo-*),
+  // aliases (#srl/design-config) and Vue SFCs work as on the page
+  const appStyles = join(nuxt.options.rootDir, '.srl/scss/entries/app.scss')
+  const html = () => `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SRL</title>
+<script type="module">
+import ${JSON.stringify(`${assets}@fs${appStyles}`)}
+import ${JSON.stringify(`${assets}@fs${file('./runtime/devtools/tab/main')}`)}
+</script>
+</head>
+<body><div id="app"></div></body>
+</html>`
+  addDevServerHandler({ route, handler: defineEventHandler(() => html()) })
+  addCustomTab({ name: 'srl', title: 'SRL', icon: 'carbon:grid', view: { type: 'iframe', src: `${base}${route}` } }, nuxt)
 }

@@ -28,7 +28,9 @@
   "dependencies": {
     "@clack/prompts": "^1.8.1",
     "@kne/color-palette": "^0.1.0",
+    "@nuxt/devtools-kit": "^3.4.4",
     "@nuxt/kit": "^4.6.0",
+    "@vicons/ionicons5": "^0.13.0",
     "c12": "^3.3.4",
     "chokidar": "^4.0.3",
     "citty": "^0.2.2",
@@ -37,6 +39,7 @@
     "jiti": "^2.7.0",
     "magicast": "^0.5.5",
     "modern-css-reset": "^1.4.0",
+    "naive-ui": "^2.45.3",
     "parse5": "^8.0.1",
     "postcss": "^8.5.29",
     "semver": "^7.8.5",

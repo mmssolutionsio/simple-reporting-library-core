@@ -38,22 +38,25 @@ const dark = computed(() => {
 
 <template>
   <div class="srl-dt" :class="{ 'is-dark': dark }">
-    <div class="srl-dt-bar">
-      <div class="srl-dt-row">
-        <Switch v-model="settings.grid" label="Grid overlay" />
-        <input
-          v-model.number="settings.gridOpacity"
-          type="range"
-          min="0.02"
-          max="0.3"
-          step="0.02"
-          :disabled="!settings.grid"
-          aria-label="Grid opacity"
-        />
+    <!-- sticky: bar and tabs stay at the top of the panel while the content scrolls -->
+    <header class="srl-dt-head">
+      <div class="srl-dt-bar">
+        <div class="srl-dt-row">
+          <Switch v-model="settings.grid" label="Grid overlay" />
+          <input
+            v-model.number="settings.gridOpacity"
+            type="range"
+            min="0.02"
+            max="0.3"
+            step="0.02"
+            :disabled="!settings.grid"
+            aria-label="Grid opacity"
+          />
+        </div>
+        <span class="srl-dt-muted">{{ viewPort.viewPort ?? '–' }} · {{ viewPort.innerWidth }}px</span>
       </div>
-      <span class="srl-dt-muted">{{ viewPort.viewPort ?? '–' }} · {{ viewPort.innerWidth }}px</span>
-    </div>
-    <Tabs v-model="active" :tabs="tabs" />
+      <Tabs v-model="active" :tabs="tabs" />
+    </header>
     <DialogViewPort v-if="active === 'viewport'" />
     <DialogGrid v-else-if="active === 'grid'" />
     <DialogSpacer v-else-if="active === 'spacer'" />

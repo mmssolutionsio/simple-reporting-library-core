@@ -1,6 +1,7 @@
 <script setup lang="ts">
 // On the page (dev only): grid columns and a badge with breakpoint and width. Switched in the SRL
-// tab of the Nuxt DevTools; a click on the badge toggles the grid, dragging moves it. The grid is built
+// tab of the Nuxt DevTools; a click on the badge toggles the grid, dragging moves it, a right-click
+// copies the breakpoint. The grid is built
 // from srl.config (columns, gutter, containers of the current breakpoint), plain CSS: core is
 // packaged without the project's `srl` SCSS module.
 import { computed } from 'vue'
@@ -93,5 +94,68 @@ const grid = computed(() => {
 }
 .srl-devtools-badge.is-on .srl-devtools-badge__dot {
   background: #00dc82;
+}
+/* right-click copied the breakpoint: short pop + green flash. `scale` (not `transform`), so the
+   transform that positions the badge on its edge stays untouched. */
+.srl-devtools-badge.is-copied {
+  animation: srl-devtools-badge-copied 1.2s ease-out;
+}
+.srl-devtools-badge.is-copied .srl-devtools-badge__dot {
+  background: #00dc82;
+  animation: srl-devtools-badge-dot 0.6s ease-out;
+}
+.srl-devtools-badge__copied {
+  animation: srl-devtools-badge-text 0.25s ease-out;
+}
+.srl-devtools-badge__sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+@keyframes srl-devtools-badge-copied {
+  0% {
+    scale: 1;
+    background: rgba(0, 0, 0, 0.7);
+  }
+  15% {
+    scale: 1.15;
+    background: rgba(4, 122, 75, 0.95);
+  }
+  35% {
+    scale: 1;
+  }
+  75% {
+    background: rgba(4, 122, 75, 0.95);
+  }
+  100% {
+    background: rgba(0, 0, 0, 0.7);
+  }
+}
+@keyframes srl-devtools-badge-dot {
+  0% {
+    box-shadow: 0 0 0 0 rgba(0, 220, 130, 0.9);
+  }
+  100% {
+    box-shadow: 0 0 0 8px rgba(0, 220, 130, 0);
+  }
+}
+@keyframes srl-devtools-badge-text {
+  from {
+    opacity: 0;
+    translate: 0 3px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .srl-devtools-badge.is-copied,
+  .srl-devtools-badge.is-copied .srl-devtools-badge__dot,
+  .srl-devtools-badge__copied {
+    animation: none;
+  }
+  .srl-devtools-badge.is-copied {
+    background: rgba(4, 122, 75, 0.95);
+  }
 }
 </style>

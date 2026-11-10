@@ -8,10 +8,11 @@
   --dt-accent: #00dc82;
   --dt-accent-fg: #047a4b;
   --dt-info: #eef6ff;
+  --dt-pad: 16px;
   color-scheme: light;
   min-height: 100vh;
   box-sizing: border-box;
-  padding: 10px 16px 32px;
+  padding: 10px var(--dt-pad) 32px;
   background: var(--dt-bg);
   color: var(--dt-fg);
   font: 13px/1.45 ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
@@ -58,7 +59,7 @@
 }
 .srl-dt-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(230px, 100%), 1fr));
   gap: 16px;
 }
 .srl-dt-alert {
@@ -76,17 +77,35 @@
   font-size: 11px;
 }
 
-/* tabs */
+/* sticky head: bar + tabs stay at the top of the panel, full width over the padding of .srl-dt */
+.srl-dt-head {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  margin: -10px calc(-1 * var(--dt-pad)) 14px;
+  padding: 10px var(--dt-pad) 0;
+  background: var(--dt-bg);
+}
+
+/* tabs: one row; on narrow panels it scrolls sideways instead of wrapping, so the sticky head
+   stays low and does not cover the content */
 .srl-dt-tabs {
   display: flex;
-  flex-wrap: wrap;
   gap: 2px;
-  margin-bottom: 14px;
-  border-bottom: 1px solid var(--dt-border);
+  margin: 0 calc(-1 * var(--dt-pad));
+  padding: 0 var(--dt-pad);
+  box-shadow: inset 0 -1px 0 var(--dt-border);
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+}
+.srl-dt-tabs::-webkit-scrollbar {
+  display: none;
 }
 .srl-dt-tabs__tab {
-  margin-bottom: -1px;
+  flex: none;
   padding: 6px 12px;
+  white-space: nowrap;
   border: 0;
   border-bottom: 2px solid transparent;
   background: none;
@@ -102,9 +121,25 @@
   color: var(--dt-accent-fg);
 }
 
+/* narrow panels (DevTools docked small, phones) and touch: less padding, larger tap targets */
+@media (max-width: 480px) {
+  .srl-dt {
+    --dt-pad: 10px;
+  }
+  .srl-dt-bar {
+    gap: 6px 12px;
+  }
+}
+@media (pointer: coarse) {
+  .srl-dt-tabs__tab {
+    padding: 10px 14px;
+  }
+}
+
 /* table */
 .srl-dt-table {
   width: 100%;
+  overflow-wrap: anywhere;
   border-collapse: collapse;
   border: 1px solid var(--dt-border);
 }
